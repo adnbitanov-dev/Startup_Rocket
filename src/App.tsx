@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { UserProvider, useUser } from './store/UserContext';
+import { DataProvider } from './store/DataContext';
 import MobileLayout from './layouts/MobileLayout';
 import WelcomeScreen from './pages/auth/WelcomeScreen';
 import PhoneAuth from './pages/auth/PhoneAuth';
 import RoleSelect from './pages/auth/RoleSelect';
 import CustomerDashboard from './pages/customer/CustomerDashboard';
 import CustomerOrders from './pages/customer/CustomerOrders';
+import CreateOrder from './pages/customer/CreateOrder';
 import ContractorDashboard from './pages/contractor/ContractorDashboard';
 import ContractorFeed from './pages/contractor/ContractorFeed';
 import ContractorJobs from './pages/contractor/ContractorJobs';
@@ -58,6 +60,7 @@ function AppContent() {
         <Route index element={<RoleRedirect />} />
         <Route path="customer" element={<CustomerDashboard />} />
         <Route path="customer/orders" element={<CustomerOrders />} />
+        <Route path="customer/create-order" element={<CreateOrder />} />
         <Route path="contractor" element={<ContractorDashboard />} />
         <Route path="contractor/feed" element={<ContractorFeed />} />
         <Route path="contractor/jobs" element={<ContractorJobs />} />
@@ -72,7 +75,9 @@ function App() {
   return (
     <BrowserRouter>
       <UserProvider>
-        <AppContent />
+        <DataProvider>
+          <AppContent />
+        </DataProvider>
       </UserProvider>
     </BrowserRouter>
   );

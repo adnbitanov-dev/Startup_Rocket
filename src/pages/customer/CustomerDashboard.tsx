@@ -3,14 +3,16 @@ import { Wallet, TrendingUp, Clock, ChevronRight, Shield, Plus } from 'lucide-re
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
-import { customerOrders, customerEscrow, formatMoney, statusLabels, statusVariants } from '../../mock/data';
+import { customerEscrow, formatMoney, statusLabels, statusVariants } from '../../mock/data';
 import { useNavigate } from 'react-router-dom';
+import { useData } from '../../store/DataContext';
 
-const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.07 } } };
-const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } } };
+const container: any = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.07 } } };
+const item: any = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } } };
 
 export default function CustomerDashboard() {
   const navigate = useNavigate();
+  const { customerOrders } = useData();
   const activeOrders = customerOrders.filter((o) => o.status !== 'completed');
   const currentMilestone = customerOrders[0]?.milestones.find((m) => m.status === 'in_progress');
 
@@ -124,7 +126,7 @@ export default function CustomerDashboard() {
 
       {/* Create order */}
       <motion.div variants={item}>
-        <Button fullWidth size="lg" icon={<Plus size={20} />}>Создать заказ</Button>
+        <Button fullWidth size="lg" icon={<Plus size={20} />} onClick={() => navigate('/customer/create-order')}>Создать заказ</Button>
       </motion.div>
     </motion.div>
   );

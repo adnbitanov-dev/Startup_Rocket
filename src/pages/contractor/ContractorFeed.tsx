@@ -4,13 +4,28 @@ import { MapPin, Clock, ChevronRight, Layers, Send } from 'lucide-react';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
-import { availableOrders, myBids, formatMoney, timeAgo } from '../../mock/data';
+import { formatMoney, timeAgo } from '../../mock/data';
+import { useData } from '../../store/DataContext';
 
-const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
-const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } } };
+const container: any = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
+const item: any = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } } };
 
 export default function ContractorFeed() {
+  const { availableOrders, hasBidOnOrder, getBidsForOrder, submitBid } = useData();
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
+  const [biddingOrderId, setBiddingOrderId] = useState<string | null>(null);
+  const [bidPrice, setBidPrice] = useState('');
+  const [bidMessage, setBidMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmitBid = async (orderId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsSubmitting(true);
+    await new Promise(r => setTimeout(r, 1000)); // mock api
+    submitBid(orderId, parseInt(bidPrice), bidMessage);
+    setIsSubmitting(false);
+    setBiddingOrderId(null);
+  };
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-5 pb-4">
@@ -37,12 +52,17 @@ export default function ContractorFeed() {
 
       {/* Orders */}
       {availableOrders.map((order) => {
-        const hasBid = myBids.some(b => b.orderId === order.id);
+        const hasBid = hasBidOnOrder(order.id);
+        const myBid = getBidsForOrder(order.id).find(b => b.contractorId === 'u-contractor');
         const isSelected = selectedOrder === order.id;
 
         return (
           <motion.div key={order.id} variants={item}>
-            <Card padding="sm" hoverable onClick={() => setSelectedOrder(isSelected ? null : order.id)}>
+            <Card padding="sm" hoverable={!biddingOrderId} onClick={() => {
+              if (biddingOrderId === order.id) return;
+              setSelectedOrder(isSelected ? null : order.id);
+              setBiddingOrderId(null);
+            }}>
               <div className="p-3">
                 {/* Header */}
                 <div className="flex items-start justify-between">
@@ -93,15 +113,61 @@ export default function ContractorFeed() {
                       ))}
                     </div>
 
-                    {hasBid ? (
+                    {hasBid && myBid ? (
                       <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 text-center">
                         <p className="text-sm font-medium text-primary">✓ Вы уже откликнулись</p>
                         <p className="text-xs text-text-muted mt-0.5">
-                          Ваша цена: {formatMoney(myBids.find(b => b.orderId === order.id)!.proposedPrice)}
+                          Ваша цена: {formatMoney(myBid.proposedPrice)}
                         </p>
                       </div>
+                    ) : biddingOrderId === order.id ? (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                        className="p-3 rounded-xl bg-gray-50 border border-gray-100 space-y-3"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <h5 className="text-sm font-semibold text-text-main">Ваше предложение</h5>
+                        <div>
+                          <label className="text-xs text-text-muted mb-1 block">За какую сумму готовы выполнить?</label>
+                          <input 
+                            type="number" 
+                            placeholder={order.totalBudget.toString()}
+                            value={bidPrice}
+                            onChange={e => setBidPrice(e.target.value)}
+                            className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-primary text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-text-muted mb-1 block">Сообщение заказчику</label>
+                          <textarea 
+                            placeholder="Опишите ваш опыт и почему стоит выбрать вас..."
+                            value={bidMessage}
+                            onChange={e => setBidMessage(e.target.value)}
+                            className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-primary text-sm resize-none h-20"
+                          />
+                        </div>
+                        <div className="flex gap-2 pt-1">
+                          <button 
+                            className="flex-1 py-2 rounded-xl bg-gray-200 text-gray-700 text-sm font-medium"
+                            onClick={(e) => { e.stopPropagation(); setBiddingOrderId(null); }}
+                          >
+                            Отмена
+                          </button>
+                          <button 
+                            className="flex-1 py-2 rounded-xl bg-primary text-white text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                            onClick={(e) => handleSubmitBid(order.id, e)}
+                            disabled={isSubmitting || !bidPrice}
+                          >
+                            {isSubmitting ? 'Отправка...' : 'Отправить'}
+                          </button>
+                        </div>
+                      </motion.div>
                     ) : (
-                      <Button fullWidth icon={<Send size={16} />}>
+                      <Button fullWidth icon={<Send size={16} />} onClick={(e) => {
+                        e.stopPropagation();
+                        setBiddingOrderId(order.id);
+                        setBidPrice(order.totalBudget.toString());
+                      }}>
                         Откликнуться
                       </Button>
                     )}

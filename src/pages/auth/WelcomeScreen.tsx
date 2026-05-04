@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, ArrowRight, Smartphone } from 'lucide-react';
+import { Shield, ArrowRight } from 'lucide-react';
 import Button from '../../components/ui/Button';
 
 interface WelcomeScreenProps {

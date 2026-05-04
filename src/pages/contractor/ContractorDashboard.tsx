@@ -2,14 +2,16 @@ import { motion } from 'framer-motion';
 import { Wallet, TrendingUp, Star, Briefcase, ChevronRight, Camera } from 'lucide-react';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
-import { contractorActiveJobs, contractorEarnings, formatMoney, statusLabels, statusVariants } from '../../mock/data';
+import { contractorEarnings, formatMoney, statusLabels, statusVariants } from '../../mock/data';
 import { useNavigate } from 'react-router-dom';
+import { useData } from '../../store/DataContext';
 
-const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.07 } } };
-const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } } };
+const container: any = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.07 } } };
+const item: any = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } } };
 
 export default function ContractorDashboard() {
   const navigate = useNavigate();
+  const { contractorActiveJobs } = useData();
   const currentJob = contractorActiveJobs[0];
   const currentMilestone = currentJob?.milestones.find(m => m.status === 'in_progress');
 

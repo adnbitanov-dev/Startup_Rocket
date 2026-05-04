@@ -2,10 +2,11 @@ import { motion } from 'framer-motion';
 import { CheckCircle2, Clock, Camera, MapPin } from 'lucide-react';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
-import { contractorActiveJobs, formatMoney, formatDate, statusLabels, statusVariants } from '../../mock/data';
+import { formatMoney, formatDate, statusLabels, statusVariants } from '../../mock/data';
+import { useData } from '../../store/DataContext';
 
-const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
-const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } } };
+const container: any = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
+const item: any = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } } };
 
 const milestoneIcons: Record<string, React.ReactNode> = {
   accepted: <CheckCircle2 size={18} className="text-success" />,
@@ -14,6 +15,7 @@ const milestoneIcons: Record<string, React.ReactNode> = {
 };
 
 export default function ContractorJobs() {
+  const { contractorActiveJobs } = useData();
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-5 pb-4">
       <motion.div variants={item}>
@@ -24,7 +26,6 @@ export default function ContractorJobs() {
       </motion.div>
 
       {contractorActiveJobs.map((job) => {
-        const currentMs = job.milestones.find(m => m.status === 'in_progress');
         const completedMs = job.milestones.filter(m => m.status === 'accepted').length;
         const progress = (completedMs / job.milestones.length) * 100;
 
