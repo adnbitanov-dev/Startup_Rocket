@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import type { Order, Bid } from '../types';
-import { useUser } from './UserContext';
 import { 
   customerOrders as mockCustomerOrders, 
   availableOrders as mockAvailableOrders,
@@ -41,8 +40,6 @@ const initialBids = [
 ];
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const { role } = useUser();
-  
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [bids, setBids] = useState<Bid[]>(initialBids);
 
