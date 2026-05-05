@@ -93,10 +93,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
     // Update order status and set contractor
     setOrders(orders.map(o => {
       if (o.id === bid.orderId) {
+        // Start the first milestone automatically when the job starts
+        const updatedMilestones = [...o.milestones];
+        if (updatedMilestones.length > 0 && updatedMilestones[0].status === 'pending') {
+          updatedMilestones[0] = { ...updatedMilestones[0], status: 'in_progress' };
+        }
+        
         return {
           ...o,
           status: 'in_progress',
-          contractorId: bid.contractorId
+          contractorId: bid.contractorId,
+          milestones: updatedMilestones
         };
       }
       return o;
@@ -114,14 +121,24 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const updateMilestoneStatus = (orderId: string, milestoneId: string, status: Milestone['status'], photos?: { before: string, after: string }) => {
     setOrders(orders.map(o => {
       if (o.id === orderId) {
+        let updatedMilestones = o.milestones.map(m => {
+          if (m.id === milestoneId) {
+            return { ...m, status, ...(photos ? { photos } : {}) };
+          }
+          return m;
+        });
+
+        // If a milestone was accepted, automatically start the NEXT pending milestone
+        if (status === 'accepted') {
+          const nextPendingIndex = updatedMilestones.findIndex(m => m.status === 'pending');
+          if (nextPendingIndex !== -1) {
+            updatedMilestones[nextPendingIndex] = { ...updatedMilestones[nextPendingIndex], status: 'in_progress' };
+          }
+        }
+
         return {
           ...o,
-          milestones: o.milestones.map(m => {
-            if (m.id === milestoneId) {
-              return { ...m, status, ...(photos ? { photos } : {}) };
-            }
-            return m;
-          })
+          milestones: updatedMilestones
         };
       }
       return o;
