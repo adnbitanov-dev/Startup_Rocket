@@ -4,8 +4,11 @@ import { CheckCircle2, Clock, AlertTriangle, ChevronDown, ChevronUp, MapPin, Use
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
+import FaceIdModal from '../../components/ui/FaceIdModal';
+import BeforeAfterSlider from '../../components/ui/BeforeAfterSlider';
 import { formatMoney, formatDate, statusLabels, statusVariants } from '../../mock/data';
 import { useData } from '../../store/DataContext';
+import { useNavigate } from 'react-router-dom';
 
 const container: any = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
 const item: any = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } } };
@@ -19,9 +22,12 @@ const milestoneIcons: Record<string, React.ReactNode> = {
 };
 
 export default function CustomerOrders() {
-  const { customerOrders, getBidsForOrder, acceptBid } = useData();
+  const { customerOrders, getBidsForOrder, acceptBid, updateMilestoneStatus } = useData();
+  const navigate = useNavigate();
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
+  const [showFaceId, setShowFaceId] = useState(false);
+  const [acceptingMsId, setAcceptingMsId] = useState<{orderId: string, msId: string} | null>(null);
 
   const tabs = ['Все', 'В работе', 'Завершённые'];
   const filtered = activeTab === 0 ? customerOrders
@@ -145,6 +151,43 @@ export default function CustomerOrders() {
                           <p className="text-[11px] text-text-muted">Вы сможете принять или оспорить результат после завершения</p>
                         </div>
                       )}
+
+                      {/* Review Milestones */}
+                      {order.milestones.filter(m => m.status === 'review').map(ms => (
+                        <div key={`review-${ms.id}`} className="mt-4 p-4 rounded-xl bg-white border border-gray-100 shadow-sm ios-shadow">
+                          <h4 className="text-sm font-semibold mb-2">Приемка: {ms.title}</h4>
+                          <p className="text-xs text-text-muted mb-3">Исполнитель завершил этап. Проверьте фото до и после.</p>
+                          
+                          {ms.photos && (
+                            <div className="mb-4">
+                              <BeforeAfterSlider beforeImage={ms.photos.before} afterImage={ms.photos.after} />
+                            </div>
+                          )}
+
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="outline" 
+                              className="flex-1 !border-danger !text-danger hover:!bg-danger/5"
+                              onClick={() => {
+                                updateMilestoneStatus(order.id, ms.id, 'disputed');
+                                navigate('/customer/dispute');
+                              }}
+                            >
+                              Есть замечания
+                            </Button>
+                            <Button 
+                              variant="primary" 
+                              className="flex-1"
+                              onClick={() => {
+                                setAcceptingMsId({ orderId: order.id, msId: ms.id });
+                                setShowFaceId(true);
+                              }}
+                            >
+                              Принять этап
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </motion.div>
                 )}
@@ -153,6 +196,17 @@ export default function CustomerOrders() {
           </motion.div>
         );
       })}
+      
+      <FaceIdModal 
+        isOpen={showFaceId} 
+        onSuccess={() => {
+          if (acceptingMsId) {
+            updateMilestoneStatus(acceptingMsId.orderId, acceptingMsId.msId, 'accepted');
+            setAcceptingMsId(null);
+          }
+          setShowFaceId(false);
+        }} 
+      />
     </motion.div>
   );
 }

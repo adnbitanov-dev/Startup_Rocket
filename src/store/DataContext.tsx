@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import type { Order, Bid } from '../types';
+import type { Order, Bid, Milestone } from '../types';
 import { 
   customerOrders as mockCustomerOrders, 
   availableOrders as mockAvailableOrders,
@@ -23,6 +23,7 @@ interface DataContextType {
   createOrder: (order: Omit<Order, 'id' | 'customerId' | 'createdAt' | 'status' | 'contractorId'>) => void;
   submitBid: (orderId: string, price: number, message: string) => void;
   acceptBid: (bidId: string) => void;
+  updateMilestoneStatus: (orderId: string, milestoneId: string, status: Milestone['status'], photos?: { before: string, after: string }) => void;
 }
 
 const DataContext = createContext<DataContextType | null>(null);
@@ -110,6 +111,23 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  const updateMilestoneStatus = (orderId: string, milestoneId: string, status: Milestone['status'], photos?: { before: string, after: string }) => {
+    setOrders(orders.map(o => {
+      if (o.id === orderId) {
+        return {
+          ...o,
+          milestones: o.milestones.map(m => {
+            if (m.id === milestoneId) {
+              return { ...m, status, ...(photos ? { photos } : {}) };
+            }
+            return m;
+          })
+        };
+      }
+      return o;
+    }));
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -122,7 +140,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         hasBidOnOrder,
         createOrder,
         submitBid,
-        acceptBid
+        acceptBid,
+        updateMilestoneStatus
       }}
     >
       {children}

@@ -9,6 +9,7 @@ import RoleSelect from './pages/auth/RoleSelect';
 import CustomerDashboard from './pages/customer/CustomerDashboard';
 import CustomerOrders from './pages/customer/CustomerOrders';
 import CreateOrder from './pages/customer/CreateOrder';
+import DisputeChat from './pages/customer/DisputeChat';
 import ContractorDashboard from './pages/contractor/ContractorDashboard';
 import ContractorFeed from './pages/contractor/ContractorFeed';
 import ContractorJobs from './pages/contractor/ContractorJobs';
@@ -60,13 +61,15 @@ function AppContent() {
         <Route index element={<RoleRedirect />} />
         <Route path="customer" element={<CustomerDashboard />} />
         <Route path="customer/orders" element={<CustomerOrders />} />
-        <Route path="customer/create-order" element={<CreateOrder />} />
         <Route path="contractor" element={<ContractorDashboard />} />
         <Route path="contractor/feed" element={<ContractorFeed />} />
         <Route path="contractor/jobs" element={<ContractorJobs />} />
         <Route path="profile" element={<Profile />} />
         <Route path="*" element={<RoleRedirect />} />
       </Route>
+      {/* Standalone full-screen routes */}
+      <Route path="customer/create-order" element={<CreateOrder />} />
+      <Route path="customer/dispute" element={<DisputeChat />} />
     </Routes>
   );
 }

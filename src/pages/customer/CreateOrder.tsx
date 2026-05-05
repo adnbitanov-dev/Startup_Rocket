@@ -249,7 +249,7 @@ export default function CreateOrder() {
       </div>
 
       {/* Bottom fixed button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-gray-100 pb-safe">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-gray-100 safe-area-pb">
         <Button 
           fullWidth 
           size="lg" 

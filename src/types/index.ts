@@ -34,6 +34,10 @@ export interface Milestone {
   amount: number;
   status: MilestoneStatus;
   deadline: string;
+  photos?: {
+    before: string;
+    after: string;
+  };
 }
 
 export interface EscrowAccount {
