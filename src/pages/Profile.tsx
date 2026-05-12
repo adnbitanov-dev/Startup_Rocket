@@ -3,6 +3,7 @@ import { Phone, Shield, Fingerprint, ChevronRight, LogOut, Star, FileText, HelpC
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import { useUser } from '../store/UserContext';
+import { useData } from '../store/DataContext';
 import { useNavigate } from 'react-router-dom';
 
 const container: any = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
@@ -19,7 +20,16 @@ interface MenuItem {
 
 export default function Profile() {
   const { role, userPhone, userName, logout } = useUser();
+  const { customerOrders, contractorActiveJobs } = useData();
   const isCustomer = role === 'customer';
+
+  const completedCount = isCustomer 
+    ? customerOrders.filter(o => o.status === 'completed').length
+    : 0;
+  
+  const activeCount = isCustomer
+    ? customerOrders.filter(o => o.status !== 'completed').length
+    : contractorActiveJobs.length;
 
   const menuSections: { title: string; items: MenuItem[] }[] = [
     {
@@ -48,12 +58,12 @@ export default function Profile() {
 
   const stats = isCustomer
     ? [
-        { value: '3', label: 'Заказа' },
+        { value: activeCount.toString(), label: 'Активных' },
         { value: '⭐ 4.9', label: 'Рейтинг' },
-        { value: '1', label: 'Завершён' },
+        { value: completedCount.toString(), label: 'Завершено' },
       ]
     : [
-        { value: '1', label: 'Работа' },
+        { value: activeCount.toString(), label: 'В работе' },
         { value: '⭐ 4.8', label: 'Рейтинг' },
         { value: '12', label: 'Отзывов' },
       ];
@@ -68,10 +78,10 @@ export default function Profile() {
               ? 'bg-gradient-to-br from-primary to-indigo-500 shadow-primary/25'
               : 'bg-gradient-to-br from-emerald-500 to-green-600 shadow-green-500/25'
           }`}>
-            {userName.split(' ').map(n => n[0]).join('')}
+            {userName?.split(' ').map(n => n[0]).join('') || 'ГС'}
           </div>
           <div className="flex-1">
-            <h1 className="text-lg font-bold text-text-main">{userName}</h1>
+            <h1 className="text-lg font-bold text-text-main">{userName || 'Пользователь'}</h1>
             <p className="text-sm text-text-muted">{userPhone}</p>
             <div className="flex items-center gap-2 mt-1.5">
               <Badge variant={isCustomer ? 'primary' : 'success'}>

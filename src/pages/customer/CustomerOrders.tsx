@@ -6,6 +6,7 @@ import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
 import FaceIdModal from '../../components/ui/FaceIdModal';
+import CompletionModal from '../../components/ui/CompletionModal';
 import BeforeAfterSlider from '../../components/ui/BeforeAfterSlider';
 import { formatMoney, formatDate, statusLabels, statusVariants } from '../../mock/data';
 import { useData } from '../../store/DataContext';
@@ -32,6 +33,7 @@ export default function CustomerOrders() {
   const [acceptingMsId, setAcceptingMsId] = useState<{orderId: string, msId: string} | null>(null);
   const [showDisputeFaceId, setShowDisputeFaceId] = useState(false);
   const [disputingMs, setDisputingMs] = useState<{orderId: string, msId: string} | null>(null);
+  const [completionData, setCompletionData] = useState<{title: string, amount: number} | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -265,7 +267,19 @@ export default function CustomerOrders() {
         isOpen={showFaceId} 
         onSuccess={() => {
           if (acceptingMsId) {
+            // Check if this is the LAST milestone
+            const order = customerOrders.find(o => o.id === acceptingMsId.orderId);
+            const remainingMs = order?.milestones.filter(
+              m => m.id !== acceptingMsId.msId && m.status !== 'accepted'
+            ) || [];
+            const isLastMilestone = remainingMs.length === 0;
+
             updateMilestoneStatus(acceptingMsId.orderId, acceptingMsId.msId, 'accepted');
+
+            if (isLastMilestone && order) {
+              // Show completion celebration
+              setCompletionData({ title: order.title, amount: order.totalBudget });
+            }
             setAcceptingMsId(null);
           }
           setShowFaceId(false);
@@ -285,6 +299,12 @@ export default function CustomerOrders() {
             setShowDisputeFaceId(false);
           }
         }} 
+      />
+      <CompletionModal
+        isOpen={!!completionData}
+        orderTitle={completionData?.title || ''}
+        amount={completionData?.amount || 0}
+        onClose={() => setCompletionData(null)}
       />
     </motion.div>
   );
