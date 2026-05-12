@@ -1,5 +1,7 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
-import type { Order, Bid, Milestone } from '../types';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+// @ts-ignore
+import { io } from 'socket.io-client';
+import type { Order, Bid, Milestone, OrderStatus, BidStatus } from '../types';
 import { 
   customerOrders as mockCustomerOrders, 
   availableOrders as mockAvailableOrders,
@@ -44,6 +46,42 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [bids, setBids] = useState<Bid[]>(initialBids);
 
+  // --- Real-time Sync Logic ---
+  useEffect(() => {
+    // Determine backend URL (assumes server.js runs on 3001, Vite on 5173/etc)
+    const serverUrl = window.location.hostname === 'localhost' 
+      ? 'http://localhost:3001' 
+      : `http://${window.location.hostname}:3001`;
+      
+    const socket = io(serverUrl);
+
+    socket.on('connect', () => {
+      console.log('Connected to sync server');
+    });
+
+    socket.on('state_sync', (state: { orders: Order[], bids: Bid[] }) => {
+      console.log('Received state sync from server');
+      if (state && state.orders) {
+        setOrders(state.orders);
+        setBids(state.bids);
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  const broadcastState = (newOrders: Order[], newBids: Bid[]) => {
+    const serverUrl = window.location.hostname === 'localhost' 
+      ? 'http://localhost:3001' 
+      : `http://${window.location.hostname}:3001`;
+    const socket = io(serverUrl);
+    socket.emit('update_state', { orders: newOrders, bids: newBids });
+    setTimeout(() => socket.disconnect(), 500); // Disconnect after emitting
+  };
+  // -----------------------------
+
   // Getters
   const customerOrders = orders.filter(o => o.customerId === 'u-customer');
   
@@ -68,7 +106,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       status: 'published',
       createdAt: new Date().toISOString()
     };
-    setOrders([newOrder, ...orders]);
+    const newOrders = [newOrder, ...orders];
+    setOrders(newOrders);
+    broadcastState(newOrders, bids);
   };
 
   const submitBid = (orderId: string, price: number, message: string) => {
@@ -83,7 +123,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       status: 'pending',
       createdAt: new Date().toISOString()
     };
-    setBids([...bids, newBid]);
+    const newBids = [...bids, newBid];
+    setBids(newBids);
+    broadcastState(orders, newBids);
   };
 
   const acceptBid = (bidId: string) => {
@@ -91,7 +133,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!bid) return;
 
     // Update order status and set contractor
-    setOrders(orders.map(o => {
+    const newOrders = orders.map(o => {
       if (o.id === bid.orderId) {
         // Start the first milestone automatically when the job starts
         const updatedMilestones = [...o.milestones];
@@ -101,25 +143,29 @@ export function DataProvider({ children }: { children: ReactNode }) {
         
         return {
           ...o,
-          status: 'in_progress',
+          status: 'in_progress' as OrderStatus,
           contractorId: bid.contractorId,
           milestones: updatedMilestones
         };
       }
       return o;
-    }));
+    });
 
     // Update bids
-    setBids(bids.map(b => {
+    const newBids = bids.map(b => {
       if (b.orderId === bid.orderId) {
-        return { ...b, status: b.id === bidId ? 'accepted' : 'rejected' };
+        return { ...b, status: (b.id === bidId ? 'accepted' : 'rejected') as BidStatus };
       }
       return b;
-    }));
+    });
+
+    setOrders(newOrders);
+    setBids(newBids);
+    broadcastState(newOrders, newBids);
   };
 
   const updateMilestoneStatus = (orderId: string, milestoneId: string, status: Milestone['status'], photos?: { before: string, after: string }) => {
-    setOrders(orders.map(o => {
+    const newOrders = orders.map(o => {
       if (o.id === orderId) {
         let updatedMilestones = o.milestones.map(m => {
           if (m.id === milestoneId) {
@@ -142,7 +188,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         };
       }
       return o;
-    }));
+    });
+    
+    setOrders(newOrders);
+    broadcastState(newOrders, bids);
   };
 
   return (

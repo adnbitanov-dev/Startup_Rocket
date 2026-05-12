@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Phone, ArrowRight, ArrowLeft, Shield, Loader2 } from 'lucide-react';
 import Button from '../../components/ui/Button';
 
+import FaceIdModal from '../../components/ui/FaceIdModal';
+
 interface PhoneAuthProps {
-  onSuccess: () => void;
+  onSuccess: (phone: string) => void;
   onBack: () => void;
 }
 
@@ -14,6 +16,7 @@ export default function PhoneAuth({ onSuccess, onBack }: PhoneAuthProps) {
   const [code, setCode] = useState(['', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [showFaceId, setShowFaceId] = useState(false);
   const codeRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Format phone for display
@@ -70,10 +73,14 @@ export default function PhoneAuth({ onSuccess, onBack }: PhoneAuthProps) {
 
   const handleVerifyCode = async (_code: string) => {
     setIsLoading(true);
-    // Mock verification — any code works
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise(r => setTimeout(r, 800));
     setIsLoading(false);
-    onSuccess();
+    setShowFaceId(true);
+  };
+
+  const handleFaceIdSuccess = () => {
+    setShowFaceId(false);
+    onSuccess(phone);
   };
 
   // Countdown timer
@@ -212,6 +219,11 @@ export default function PhoneAuth({ onSuccess, onBack }: PhoneAuthProps) {
           )}
         </AnimatePresence>
       </div>
+
+      <FaceIdModal 
+        isOpen={showFaceId} 
+        onSuccess={handleFaceIdSuccess} 
+      />
     </div>
   );
 }
