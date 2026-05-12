@@ -179,18 +179,17 @@ export default function ContractorJobs() {
           </motion.div>
         );
       })}
-    </motion.div>
 
       <FaceIdModal
         isOpen={showFaceId}
         onSuccess={() => {
           if (fixingMs) {
-            // Reset milestone back to 'review' so customer can re-accept
             updateMilestoneStatus(fixingMs.orderId, fixingMs.msId, 'review');
             setFixingMs(null);
           }
           setShowFaceId(false);
         }}
       />
+    </motion.div>
   );
 }
