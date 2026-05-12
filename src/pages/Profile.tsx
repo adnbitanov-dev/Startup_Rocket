@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Phone, Shield, Fingerprint, ChevronRight, LogOut, Star, FileText, HelpCircle, ArrowLeftRight } from 'lucide-react';
+import { Phone, Shield, Fingerprint, ChevronRight, LogOut, Star, FileText, HelpCircle } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import { useUser } from '../store/UserContext';
@@ -18,28 +18,10 @@ interface MenuItem {
 }
 
 export default function Profile() {
-  const { role, setRole, userName, userPhone, logout } = useUser();
-  const navigate = useNavigate();
+  const { role, userPhone } = useUser();
   const isCustomer = role === 'customer';
 
-  const handleSwitchRole = () => {
-    const newRole = isCustomer ? 'contractor' : 'customer';
-    setRole(newRole);
-    navigate(newRole === 'customer' ? '/customer' : '/contractor');
-  };
-
   const menuSections: { title: string; items: MenuItem[] }[] = [
-    {
-      title: 'Роль',
-      items: [
-        {
-          icon: <ArrowLeftRight size={20} className="text-indigo-500" />,
-          label: isCustomer ? 'Переключиться на Исполнителя' : 'Переключиться на Заказчика',
-          subtitle: `Сейчас: ${isCustomer ? 'Заказчик' : 'Исполнитель'}`,
-          onClick: handleSwitchRole,
-        },
-      ],
-    },
     {
       title: 'Безопасность',
       items: [

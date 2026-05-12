@@ -68,3 +68,13 @@ export interface EscrowTransaction {
   description: string;
   createdAt: string;
 }
+
+export interface ChatMessage {
+  id: number;
+  orderId: string;
+  type: 'direct' | 'dispute';
+  senderRole: 'customer' | 'contractor' | 'system' | 'agent';
+  text: string;
+  time: string;
+  name?: string;
+}

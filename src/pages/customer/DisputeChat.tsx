@@ -1,53 +1,46 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, Send, ShieldAlert, Paperclip, Camera } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useUser } from '../../store/UserContext';
+import { useData } from '../../store/DataContext';
+import type { ChatMessage } from '../../types';
 
 export default function DisputeChat() {
+  const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
+  const { role, userName } = useUser();
+  const { getMessages, sendMessage } = useData();
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: 'system',
-      text: 'Арбитраж открыт. К чату подключен специалист Технадзора.',
-      time: '12:00',
-    },
-    {
-      id: 2,
-      sender: 'agent',
-      name: 'Азамат (Технадзор)',
-      text: 'Здравствуйте! Я изучил фото от исполнителя. Пожалуйста, опишите, какие у вас есть замечания по данному этапу?',
-      time: '12:01',
-    }
-  ]);
+
+  const messages = getMessages(orderId || '', 'dispute');
 
   const handleSend = () => {
-    if (!message.trim()) return;
-    setMessages([
-      ...messages,
-      {
-        id: Date.now(),
-        sender: 'user',
-        text: message,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      }
-    ]);
+    if (!message.trim() || !orderId) return;
+    
+    sendMessage({
+      orderId,
+      type: 'dispute',
+      senderRole: role,
+      text: message,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      name: userName
+    });
     setMessage('');
     
-    // Auto reply mock
-    setTimeout(() => {
-      setMessages(prev => [
-        ...prev,
-        {
-          id: Date.now(),
-          sender: 'agent',
+    // Auto reply mock if no agent has replied
+    if (!messages.some((m: ChatMessage) => m.senderRole === 'agent')) {
+      setTimeout(() => {
+        sendMessage({
+          orderId,
+          type: 'dispute',
+          senderRole: 'agent',
           name: 'Азамат (Технадзор)',
-          text: 'Принято. Мы запросим у исполнителя разъяснения и свяжемся с вами в течение часа. Средства на эскроу заморожены до решения вопроса.',
+          text: 'Принято. Опишите вашу проблему, мы ознакомимся со всеми материалами.',
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-      ]);
-    }, 2000);
+        });
+      }, 2000);
+    }
   };
 
   return (
@@ -72,8 +65,16 @@ export default function DisputeChat() {
 
       {/* Chat Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg) => {
-          if (msg.sender === 'system') {
+        {messages.length === 0 && (
+          <div className="flex justify-center">
+            <span className="text-[11px] bg-gray-100 text-text-muted px-3 py-1 rounded-full font-medium">
+              Арбитраж открыт. К чату подключен специалист Технадзора.
+            </span>
+          </div>
+        )}
+
+        {messages.map((msg: ChatMessage) => {
+          if (msg.senderRole === 'system') {
             return (
               <div key={msg.id} className="flex justify-center">
                 <span className="text-[11px] bg-gray-100 text-text-muted px-3 py-1 rounded-full font-medium">
@@ -83,7 +84,9 @@ export default function DisputeChat() {
             );
           }
 
-          const isUser = msg.sender === 'user';
+          const isUser = msg.senderRole === role;
+          const isAgent = msg.senderRole === 'agent';
+          
           return (
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
@@ -91,13 +94,19 @@ export default function DisputeChat() {
               key={msg.id} 
               className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
             >
-              {!isUser && <span className="text-xs text-text-muted ml-1 mb-1">{msg.name}</span>}
+              {!isUser && (
+                <span className={`text-xs ml-1 mb-1 font-medium ${isAgent ? 'text-primary' : 'text-text-muted'}`}>
+                  {msg.name || 'Пользователь'}
+                </span>
+              )}
               <div className={`max-w-[85%] p-3 rounded-2xl ${
                 isUser 
                   ? 'bg-primary text-white rounded-tr-sm' 
-                  : 'bg-white border border-gray-100 shadow-sm rounded-tl-sm'
+                  : isAgent
+                    ? 'bg-blue-50 border border-blue-100 rounded-tl-sm'
+                    : 'bg-white border border-gray-100 shadow-sm rounded-tl-sm'
               }`}>
-                <p className={`text-sm ${isUser ? 'text-white' : 'text-text-main'}`}>{msg.text}</p>
+                <p className={`text-[15px] ${isUser ? 'text-white' : 'text-text-main'}`}>{msg.text}</p>
                 <p className={`text-[10px] text-right mt-1 ${isUser ? 'text-white/70' : 'text-text-muted'}`}>{msg.time}</p>
               </div>
             </motion.div>

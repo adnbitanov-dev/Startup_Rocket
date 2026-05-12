@@ -205,7 +205,7 @@ export default function CustomerOrders() {
                               className="flex-1 !border-danger !text-danger hover:!bg-danger/5"
                               onClick={() => {
                                 updateMilestoneStatus(order.id, ms.id, 'disputed');
-                                navigate('/customer/dispute');
+                                navigate(`/dispute/${order.id}`);
                               }}
                             >
                               Есть замечания

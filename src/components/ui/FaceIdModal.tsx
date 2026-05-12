@@ -21,7 +21,8 @@ export default function FaceIdModal({ isOpen, onSuccess }: FaceIdModalProps) {
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, onSuccess]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   return (
     <AnimatePresence>

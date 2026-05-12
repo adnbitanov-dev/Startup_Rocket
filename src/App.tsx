@@ -82,7 +82,7 @@ function AppContent() {
       </Route>
       {/* Standalone full-screen routes */}
       <Route path="customer/create-order" element={<CreateOrder />} />
-      <Route path="customer/dispute" element={<DisputeChat />} />
+      <Route path="dispute/:orderId" element={<DisputeChat />} />
       <Route path="chat/:orderId" element={<Chat />} />
     </Routes>
   );

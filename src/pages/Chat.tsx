@@ -1,63 +1,51 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Send, Paperclip, Camera, MoreVertical, Check, CheckCheck } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { ChevronLeft, Send, Paperclip, Camera, MoreVertical, CheckCheck } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useUser } from '../store/UserContext';
+import { useData } from '../store/DataContext';
 
 export default function Chat() {
+  const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
-  const { role } = useUser();
+  const { role, userName } = useUser();
+  const { getMessages, sendMessage, orders } = useData();
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      senderId: role === 'customer' ? 'other' : 'me', // Mock logic for UI
-      text: 'Здравствуйте! Я готов начать работу. Подскажите, когда удобнее подъехать на объект?',
-      time: '10:00',
-      isRead: true,
-    },
-    {
-      id: 2,
-      senderId: role === 'customer' ? 'me' : 'other',
-      text: 'Добрый день! Сегодня после 14:00 будет отлично. Адрес тот же.',
-      time: '10:15',
-      isRead: true,
-    }
-  ]);
 
-  const opponentName = role === 'customer' ? 'Сергей (Исполнитель)' : 'Айдан (Заказчик)';
+  const order = orders.find(o => o.id === orderId);
+  const messages = getMessages(orderId || '', 'direct');
+
+  let opponentName = 'Собеседник';
+  if (order) {
+    if (role === 'customer') {
+      // Ideally get contractor name from order/bids, but we fallback:
+      opponentName = `Исполнитель по этапу`;
+    } else {
+      opponentName = 'Заказчик';
+    }
+  }
 
   const handleSend = () => {
-    if (!message.trim()) return;
+    if (!message.trim() || !orderId) return;
     
-    setMessages([
-      ...messages,
-      {
-        id: Date.now(),
-        senderId: 'me',
-        text: message,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isRead: false,
-      }
-    ]);
+    sendMessage({
+      orderId,
+      type: 'direct',
+      senderRole: role,
+      text: message,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      name: userName
+    });
     setMessage('');
     
-    // Simulate other person typing and replying
-    setIsTyping(true);
-    setTimeout(() => {
-      setIsTyping(false);
-      setMessages(prev => [
-        ...prev,
-        {
-          id: Date.now(),
-          senderId: 'other',
-          text: 'Принято! Буду на связи.',
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          isRead: true,
-        }
-      ]);
-    }, 2500);
+    // Simulate other person typing and replying if it's the first message
+    if (messages.length === 0) {
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+      }, 2500);
+    }
   };
 
   return (
@@ -102,7 +90,7 @@ export default function Chat() {
         </div>
 
         {messages.map((msg) => {
-          const isUser = msg.senderId === 'me';
+          const isUser = msg.senderRole === role;
           return (
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
@@ -121,7 +109,7 @@ export default function Chat() {
                 <div className={`flex items-center justify-end gap-1 mt-0.5 -mb-0.5 ${isUser ? 'text-blue-100' : 'text-gray-400'}`}>
                   <span className="text-[10px]">{msg.time}</span>
                   {isUser && (
-                    msg.isRead ? <CheckCheck size={12} className="text-blue-200" /> : <Check size={12} />
+                    <CheckCheck size={12} className="text-blue-200" />
                   )}
                 </div>
               </div>

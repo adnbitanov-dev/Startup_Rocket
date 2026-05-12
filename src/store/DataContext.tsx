@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 // @ts-ignore
 import { io } from 'socket.io-client';
-import type { Order, Bid, Milestone, OrderStatus, BidStatus } from '../types';
+import type { Order, Bid, Milestone, OrderStatus, BidStatus, ChatMessage } from '../types';
 import { 
   customerOrders as mockCustomerOrders, 
   availableOrders as mockAvailableOrders,
@@ -13,6 +13,7 @@ import {
 interface DataContextType {
   orders: Order[];
   bids: Bid[];
+  messages: ChatMessage[];
   
   // Getters
   customerOrders: Order[];
@@ -20,12 +21,14 @@ interface DataContextType {
   contractorActiveJobs: Order[];
   getBidsForOrder: (orderId: string) => Bid[];
   hasBidOnOrder: (orderId: string) => boolean;
+  getMessages: (orderId: string, type: 'direct' | 'dispute') => ChatMessage[];
   
   // Actions
   createOrder: (order: Omit<Order, 'id' | 'customerId' | 'createdAt' | 'status' | 'contractorId'>) => void;
   submitBid: (orderId: string, price: number, message: string) => void;
   acceptBid: (bidId: string) => void;
   updateMilestoneStatus: (orderId: string, milestoneId: string, status: Milestone['status'], photos?: { before: string, after: string }) => void;
+  sendMessage: (msg: Omit<ChatMessage, 'id'>) => void;
 }
 
 const DataContext = createContext<DataContextType | null>(null);
@@ -45,6 +48,7 @@ const initialBids = [
 export function DataProvider({ children }: { children: ReactNode }) {
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [bids, setBids] = useState<Bid[]>(initialBids);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   // --- Real-time Sync Logic ---
   useEffect(() => {
@@ -59,11 +63,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.log('Connected to sync server');
     });
 
-    socket.on('state_sync', (state: { orders: Order[], bids: Bid[] }) => {
+    socket.on('state_sync', (state: { orders: Order[], bids: Bid[], messages: ChatMessage[] }) => {
       console.log('Received state sync from server');
       if (state && state.orders) {
         setOrders(state.orders);
         setBids(state.bids);
+        if (state.messages) setMessages(state.messages);
       }
     });
 
@@ -72,12 +77,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const broadcastState = (newOrders: Order[], newBids: Bid[]) => {
+  const broadcastState = (newOrders: Order[], newBids: Bid[], newMessages: ChatMessage[]) => {
     const serverUrl = window.location.hostname === 'localhost' 
       ? 'http://localhost:3001' 
       : `http://${window.location.hostname}:3001`;
     const socket = io(serverUrl);
-    socket.emit('update_state', { orders: newOrders, bids: newBids });
+    socket.emit('update_state', { orders: newOrders, bids: newBids, messages: newMessages });
     setTimeout(() => socket.disconnect(), 500); // Disconnect after emitting
   };
   // -----------------------------
@@ -95,6 +100,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const getBidsForOrder = (orderId: string) => bids.filter(b => b.orderId === orderId);
   const hasBidOnOrder = (orderId: string) => bids.some(b => b.orderId === orderId && b.contractorId === 'u-contractor');
+  
+  const getMessages = (orderId: string, type: 'direct' | 'dispute') => {
+    return messages.filter(m => m.orderId === orderId && m.type === type);
+  };
 
   // Actions
   const createOrder = (orderData: Omit<Order, 'id' | 'customerId' | 'createdAt' | 'status' | 'contractorId'>) => {
@@ -108,7 +117,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     };
     const newOrders = [newOrder, ...orders];
     setOrders(newOrders);
-    broadcastState(newOrders, bids);
+    broadcastState(newOrders, bids, messages);
   };
 
   const submitBid = (orderId: string, price: number, message: string) => {
@@ -125,7 +134,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     };
     const newBids = [...bids, newBid];
     setBids(newBids);
-    broadcastState(orders, newBids);
+    broadcastState(orders, newBids, messages);
   };
 
   const acceptBid = (bidId: string) => {
@@ -161,7 +170,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
     setOrders(newOrders);
     setBids(newBids);
-    broadcastState(newOrders, newBids);
+    broadcastState(newOrders, newBids, messages);
   };
 
   const updateMilestoneStatus = (orderId: string, milestoneId: string, status: Milestone['status'], photos?: { before: string, after: string }) => {
@@ -191,7 +200,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
     
     setOrders(newOrders);
-    broadcastState(newOrders, bids);
+    broadcastState(newOrders, bids, messages);
+  };
+
+  const sendMessage = (msg: Omit<ChatMessage, 'id'>) => {
+    const newMsg: ChatMessage = { ...msg, id: Date.now() };
+    const newMessages = [...messages, newMsg];
+    setMessages(newMessages);
+    broadcastState(orders, bids, newMessages);
   };
 
   return (
@@ -199,15 +215,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
       value={{
         orders,
         bids,
+        messages,
         customerOrders,
         availableOrders,
         contractorActiveJobs,
         getBidsForOrder,
         hasBidOnOrder,
+        getMessages,
         createOrder,
         submitBid,
         acceptBid,
-        updateMilestoneStatus
+        updateMilestoneStatus,
+        sendMessage
       }}
     >
       {children}

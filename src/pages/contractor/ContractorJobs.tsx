@@ -1,12 +1,12 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Camera, MapPin, MessageSquare } from 'lucide-react';
+import { Camera, MapPin, MessageSquare, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import { formatMoney, formatDate, statusLabels, statusVariants } from '../../mock/data';
 import { useData } from '../../store/DataContext';
-import { useState } from 'react';
 
 const container: any = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
 const item: any = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } } };
@@ -125,6 +125,21 @@ export default function ContractorJobs() {
                             disabled={uploadingMsId === ms.id}
                           >
                             {uploadingMsId === ms.id ? 'Загрузка...' : 'Сдать этап (Фото)'}
+                          </Button>
+                        </div>
+                      )}
+
+                      {ms.status === 'disputed' && (
+                        <div className="mt-3 p-3 bg-danger/10 rounded-xl">
+                          <p className="text-xs text-danger font-medium mb-2">
+                            Заказчик не принял работу. Открыт спор.
+                          </p>
+                          <Button 
+                            className="w-full !bg-danger hover:!bg-danger/90" 
+                            icon={<AlertCircle size={16} />}
+                            onClick={() => navigate(`/dispute/${job.id}`)}
+                          >
+                            Перейти в арбитраж
                           </Button>
                         </div>
                       )}
