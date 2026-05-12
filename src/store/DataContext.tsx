@@ -51,20 +51,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   // --- Real-time Sync Logic ---
+  const [socket, setSocket] = useState<any>(null);
+
   useEffect(() => {
-    // Determine backend URL (assumes server.js runs on 3001, Vite on 5173/etc)
     const serverUrl = (window.location.hostname === 'localhost' && window.location.port !== '3000')
       ? 'http://localhost:3001' 
       : window.location.origin;
       
-    const socket = io(serverUrl);
+    const s = io(serverUrl);
+    setSocket(s);
 
-    socket.on('connect', () => {
-      console.log('Connected to sync server');
-    });
-
-    socket.on('state_sync', (state: { orders: Order[], bids: Bid[], messages: ChatMessage[] }) => {
-      console.log('Received state sync from server');
+    s.on('state_sync', (state: any) => {
       if (state && state.orders) {
         setOrders(state.orders);
         setBids(state.bids);
@@ -73,18 +70,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
 
     return () => {
-      socket.disconnect();
+      s.disconnect();
     };
   }, []);
 
   const broadcastState = (newOrders: Order[], newBids: Bid[], newMessages: ChatMessage[]) => {
-    const serverUrl = (window.location.hostname === 'localhost' && window.location.port !== '3000')
-      ? 'http://localhost:3001' 
-      : window.location.origin;
-      
-    const socket = io(serverUrl);
-    socket.emit('update_state', { orders: newOrders, bids: newBids, messages: newMessages });
-    setTimeout(() => socket.disconnect(), 500); 
+    if (socket) {
+      socket.emit('update_state', { orders: newOrders, bids: newBids, messages: newMessages });
+    }
   };
   // -----------------------------
 
