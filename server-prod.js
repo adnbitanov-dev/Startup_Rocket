@@ -18,13 +18,22 @@ app.use(express.static(path.join(__dirname, 'dist')));
 let appState = null; 
 
 io.on('connection', (socket) => {
+  console.log('New client connected:', socket.id);
+  
   if (appState) {
+    console.log('Sending current state to new client');
     socket.emit('state_sync', appState);
   }
 
   socket.on('update_state', (newState) => {
+    console.log('Received state update from client');
     appState = newState;
-    socket.broadcast.emit('state_sync', appState);
+    // Broadcast to EVERYONE including the sender to ensure sync
+    io.emit('state_sync', appState);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
   });
 });
 
