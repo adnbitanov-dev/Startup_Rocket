@@ -18,7 +18,7 @@ interface MenuItem {
 }
 
 export default function Profile() {
-  const { role, userPhone } = useUser();
+  const { role, userPhone, userName, logout } = useUser();
   const isCustomer = role === 'customer';
 
   const menuSections: { title: string; items: MenuItem[] }[] = [
