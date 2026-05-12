@@ -30,6 +30,8 @@ export default function CustomerOrders() {
   const [activeTab, setActiveTab] = useState(0);
   const [showFaceId, setShowFaceId] = useState(false);
   const [acceptingMsId, setAcceptingMsId] = useState<{orderId: string, msId: string} | null>(null);
+  const [showDisputeFaceId, setShowDisputeFaceId] = useState(false);
+  const [disputingMs, setDisputingMs] = useState<{orderId: string, msId: string} | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -190,8 +192,12 @@ export default function CustomerOrders() {
                       {/* Review Milestones */}
                       {order.milestones.filter(m => m.status === 'review').map(ms => (
                         <div key={`review-${ms.id}`} className="mt-4 p-4 rounded-xl bg-white border border-gray-100 shadow-sm ios-shadow">
-                          <h4 className="text-sm font-semibold mb-2">Приемка: {ms.title}</h4>
-                          <p className="text-xs text-text-muted mb-3">Исполнитель завершил этап. Проверьте фото до и после.</p>
+                          <h4 className="text-sm font-semibold mb-1">
+                            Приёмка: {ms.title}
+                          </h4>
+                          <p className="text-xs text-text-muted mb-3">
+                            Исполнитель завершил этап. Проверьте результат и примите работу.
+                          </p>
                           
                           {ms.photos && (
                             <div className="mb-4">
@@ -204,8 +210,8 @@ export default function CustomerOrders() {
                               variant="outline" 
                               className="flex-1 !border-danger !text-danger hover:!bg-danger/5"
                               onClick={() => {
-                                updateMilestoneStatus(order.id, ms.id, 'disputed');
-                                navigate(`/dispute/${order.id}`);
+                                setDisputingMs({ orderId: order.id, msId: ms.id });
+                                setShowDisputeFaceId(true);
                               }}
                             >
                               Есть замечания
@@ -242,6 +248,21 @@ export default function CustomerOrders() {
             setAcceptingMsId(null);
           }
           setShowFaceId(false);
+        }} 
+      />
+
+      {/* Face ID for dispute/rejection */}
+      <FaceIdModal 
+        isOpen={showDisputeFaceId} 
+        onSuccess={() => {
+          if (disputingMs) {
+            updateMilestoneStatus(disputingMs.orderId, disputingMs.msId, 'disputed');
+            setShowDisputeFaceId(false);
+            navigate(`/dispute/${disputingMs.orderId}`);
+            setDisputingMs(null);
+          } else {
+            setShowDisputeFaceId(false);
+          }
         }} 
       />
     </motion.div>

@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Camera, MapPin, MessageSquare, AlertCircle } from 'lucide-react';
+import { Camera, MapPin, MessageSquare, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
+import FaceIdModal from '../../components/ui/FaceIdModal';
 import { formatMoney, formatDate, statusLabels, statusVariants } from '../../mock/data';
 import { useData } from '../../store/DataContext';
 
@@ -17,6 +18,8 @@ export default function ContractorJobs() {
   const navigate = useNavigate();
   const { contractorActiveJobs, updateMilestoneStatus } = useData();
   const [uploadingMsId, setUploadingMsId] = useState<string | null>(null);
+  const [showFaceId, setShowFaceId] = useState(false);
+  const [fixingMs, setFixingMs] = useState<{ orderId: string; msId: string } | null>(null);
 
   const handleCompletePhase = async (orderId: string, milestoneId: string) => {
     setUploadingMsId(milestoneId);
@@ -130,16 +133,27 @@ export default function ContractorJobs() {
                       )}
 
                       {ms.status === 'disputed' && (
-                        <div className="mt-3 p-3 bg-danger/10 rounded-xl">
-                          <p className="text-xs text-danger font-medium mb-2">
-                            Заказчик не принял работу. Открыт спор.
+                        <div className="mt-3 p-3 bg-danger/10 rounded-xl space-y-2">
+                          <p className="text-xs text-danger font-medium">
+                            ⚠️ Заказчик не принял работу. Открыт спор.
                           </p>
                           <Button 
-                            className="w-full !bg-danger hover:!bg-danger/90" 
+                            variant="outline"
+                            className="w-full !border-danger !text-danger hover:!bg-danger/5" 
                             icon={<AlertCircle size={16} />}
                             onClick={() => navigate(`/dispute/${job.id}`)}
                           >
                             Перейти в арбитраж
+                          </Button>
+                          <Button 
+                            className="w-full" 
+                            icon={<CheckCircle2 size={16} />}
+                            onClick={() => {
+                              setFixingMs({ orderId: job.id, msId: ms.id });
+                              setShowFaceId(true);
+                            }}
+                          >
+                            Работы исправлены
                           </Button>
                         </div>
                       )}
@@ -166,5 +180,17 @@ export default function ContractorJobs() {
         );
       })}
     </motion.div>
+
+      <FaceIdModal
+        isOpen={showFaceId}
+        onSuccess={() => {
+          if (fixingMs) {
+            // Reset milestone back to 'review' so customer can re-accept
+            updateMilestoneStatus(fixingMs.orderId, fixingMs.msId, 'review');
+            setFixingMs(null);
+          }
+          setShowFaceId(false);
+        }}
+      />
   );
 }
