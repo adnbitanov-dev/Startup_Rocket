@@ -27,10 +27,10 @@ export default function BottomNav() {
   );
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-t border-gray-100 px-4 pb-6 pt-2 flex justify-around items-center max-w-md mx-auto rounded-t-[32px] shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.1)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-2xl border-t border-gray-100 px-2 pb-7 pt-2 flex justify-around items-center max-w-md mx-auto rounded-t-[32px] shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
       <NavItem 
         to="/" 
-        icon={<LayoutGrid className="w-6 h-6" />} 
+        icon={<LayoutGrid className="w-[22px] h-[22px]" />} 
         label={role === 'customer' ? 'Заказы' : 'Задания'} 
         active={location.pathname === '/' || location.pathname.startsWith('/customer') || location.pathname.startsWith('/contractor')} 
       />
@@ -38,7 +38,7 @@ export default function BottomNav() {
       {role === 'contractor' && (
         <NavItem 
           to="/available-orders" 
-          icon={<Search className="w-6 h-6" />} 
+          icon={<Search className="w-[22px] h-[22px]" />} 
           label="Биржа" 
           active={location.pathname === '/available-orders'} 
         />
@@ -47,7 +47,7 @@ export default function BottomNav() {
       {role === 'admin' && (
         <NavItem 
           to="/admin" 
-          icon={<ShieldCheck className="w-6 h-6" />} 
+          icon={<ShieldCheck className="w-[22px] h-[22px]" />} 
           label="Админ" 
           active={location.pathname === '/admin'} 
         />
@@ -55,7 +55,7 @@ export default function BottomNav() {
       
       <NavItem 
         to="/profile" 
-        icon={<User className="w-6 h-6" />} 
+        icon={<User className="w-[22px] h-[22px]" />} 
         label="Профиль" 
         active={location.pathname === '/profile'} 
       />

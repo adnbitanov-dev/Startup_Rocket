@@ -51,15 +51,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   // --- Real-time Sync Logic ---
-  const [socket, setSocket] = useState<any>(null);
-
   useEffect(() => {
     const serverUrl = (window.location.hostname === 'localhost' && window.location.port !== '3000')
       ? 'http://localhost:3001' 
       : window.location.origin;
       
     const s = io(serverUrl);
-    setSocket(s);
+    // @ts-ignore
+    window.socket = s;
 
     s.on('state_sync', (state: any) => {
       if (state && state.orders) {
@@ -75,8 +74,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const broadcastState = (newOrders: Order[], newBids: Bid[], newMessages: ChatMessage[]) => {
-    if (socket) {
-      socket.emit('update_state', { orders: newOrders, bids: newBids, messages: newMessages });
+    // @ts-ignore
+    if (window.socket) {
+      // @ts-ignore
+      window.socket.emit('update_state', { orders: newOrders, bids: newBids, messages: newMessages });
     }
   };
   // -----------------------------
