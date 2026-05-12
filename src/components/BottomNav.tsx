@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, ClipboardList, User, Search, Briefcase } from 'lucide-react';
+import { Home, ClipboardList, User, Search, Briefcase, BarChart3 } from 'lucide-react';
 import { useUser } from '../store/UserContext';
 import { motion } from 'framer-motion';
 
@@ -19,7 +19,12 @@ export default function BottomNav() {
     { to: '/profile', icon: User, label: 'Профиль' },
   ];
 
-  const navItems = role === 'customer' ? customerItems : contractorItems;
+  const adminItems = [
+    { to: '/admin', icon: BarChart3, label: 'Аналитика' },
+    { to: '/profile', icon: User, label: 'Профиль' },
+  ];
+
+  const navItems = role === 'customer' ? customerItems : role === 'admin' ? adminItems : contractorItems;
 
   return (
     <nav className="fixed bottom-0 w-full safe-area-pb z-50">

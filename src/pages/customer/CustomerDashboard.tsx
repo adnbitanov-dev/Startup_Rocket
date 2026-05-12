@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Wallet, TrendingUp, Clock, ChevronRight, Shield, Plus, Zap, BarChart3 } from 'lucide-react';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
+
 import { customerEscrow, formatMoney, statusLabels, statusVariants } from '../../mock/data';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../../store/DataContext';

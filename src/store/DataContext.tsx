@@ -53,9 +53,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // --- Real-time Sync Logic ---
   useEffect(() => {
     // Determine backend URL (assumes server.js runs on 3001, Vite on 5173/etc)
-    const serverUrl = window.location.hostname === 'localhost' 
+    const serverUrl = (window.location.hostname === 'localhost' && window.location.port !== '3000')
       ? 'http://localhost:3001' 
-      : `http://${window.location.hostname}:3001`;
+      : window.location.origin;
       
     const socket = io(serverUrl);
 

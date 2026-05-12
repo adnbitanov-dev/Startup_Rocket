@@ -31,9 +31,11 @@ export default function Header() {
           <div className={`px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-wide ${
             role === 'customer'
               ? 'bg-indigo-50 text-indigo-600'
+              : role === 'admin'
+              ? 'bg-slate-900 text-white shadow-lg shadow-black/10'
               : 'bg-emerald-50 text-emerald-600'
           }`}>
-            {role === 'customer' ? '👤 Заказчик' : '🔨 Исполнитель'}
+            {role === 'customer' ? '👤 Заказчик' : role === 'admin' ? '🛡️ Admin' : '🔨 Исполнитель'}
           </div>
 
           {/* Notifications */}

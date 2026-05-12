@@ -4,7 +4,7 @@ import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import { useUser } from '../store/UserContext';
 import { useData } from '../store/DataContext';
-import { useNavigate } from 'react-router-dom';
+
 
 const container: any = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
 const item: any = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } } };
@@ -56,7 +56,13 @@ export default function Profile() {
     },
   ];
 
-  const stats = isCustomer
+  const stats = role === 'admin'
+    ? [
+        { value: '🚀 5.2x', label: 'LTV/CAC' },
+        { value: '5%', label: 'Margin' },
+        { value: '142', label: 'Users' },
+      ]
+    : isCustomer
     ? [
         { value: activeCount.toString(), label: 'Активных' },
         { value: '⭐ 4.9', label: 'Рейтинг' },
@@ -74,7 +80,9 @@ export default function Profile() {
       <motion.div variants={item}>
         <Card className="flex items-center gap-4">
           <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold shadow-lg ${
-            isCustomer
+            role === 'admin'
+              ? 'bg-slate-900 shadow-slate-900/25'
+              : isCustomer
               ? 'bg-gradient-to-br from-primary to-indigo-500 shadow-primary/25'
               : 'bg-gradient-to-br from-emerald-500 to-green-600 shadow-green-500/25'
           }`}>
@@ -84,8 +92,8 @@ export default function Profile() {
             <h1 className="text-lg font-bold text-text-main">{userName || 'Пользователь'}</h1>
             <p className="text-sm text-text-muted">{userPhone}</p>
             <div className="flex items-center gap-2 mt-1.5">
-              <Badge variant={isCustomer ? 'primary' : 'success'}>
-                {isCustomer ? '👤 Заказчик' : '🔨 Исполнитель'}
+              <Badge variant={role === 'admin' ? 'neutral' : isCustomer ? 'primary' : 'success'}>
+                {role === 'admin' ? '🛡️ Admin' : isCustomer ? '👤 Заказчик' : '🔨 Исполнитель'}
               </Badge>
               <Badge variant="success" size="sm">✓ Верифицирован</Badge>
             </div>

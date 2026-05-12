@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Send, Paperclip, Camera, MoreVertical, CheckCheck } from 'lucide-react';
+import { ChevronLeft, Send, Paperclip, MoreVertical, CheckCheck } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUser } from '../store/UserContext';
 import { useData } from '../store/DataContext';
@@ -95,9 +95,8 @@ export default function Chat() {
           </span>
         </div>
 
-        {messages.map((msg, idx) => {
+        {messages.map((msg) => {
           const isUser = msg.senderRole === role;
-          const showAvatar = idx === 0 || messages[idx-1].senderRole !== msg.senderRole;
 
           return (
             <motion.div 

@@ -14,11 +14,13 @@ import Chat from './pages/Chat';
 import ContractorDashboard from './pages/contractor/ContractorDashboard';
 import ContractorFeed from './pages/contractor/ContractorFeed';
 import ContractorJobs from './pages/contractor/ContractorJobs';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import EscrowOnboarding from './components/ui/EscrowOnboarding';
 import Profile from './pages/Profile';
 
 function AuthFlow() {
   const { setAuthenticated, setOnboarded, setRole } = useUser();
-  const [authStep, setAuthStep] = useState<'welcome' | 'phone' | 'role'>('welcome');
+  const [authStep, setAuthStep] = useState<'welcome' | 'phone' | 'role' | 'escrow'>('welcome');
 
   if (authStep === 'welcome') {
     return <WelcomeScreen onComplete={() => setAuthStep('phone')} />;
@@ -31,10 +33,12 @@ function AuthFlow() {
         onSuccess={(phone) => {
           if (phone === '77019563020') {
             setRole('customer');
-            setAuthenticated(true);
-            setOnboarded(true);
+            setAuthStep('escrow');
           } else if (phone === '7771234567') {
             setRole('contractor');
+            setAuthStep('escrow');
+          } else if (phone === '77007007007') {
+            setRole('admin');
             setAuthenticated(true);
             setOnboarded(true);
           } else {
@@ -45,10 +49,20 @@ function AuthFlow() {
     );
   }
 
+  if (authStep === 'role') {
+    return (
+      <RoleSelect
+        onSelect={(role) => {
+          setRole(role);
+          setAuthStep('escrow');
+        }}
+      />
+    );
+  }
+
   return (
-    <RoleSelect
-      onSelect={(role) => {
-        setRole(role);
+    <EscrowOnboarding
+      onComplete={() => {
         setAuthenticated(true);
         setOnboarded(true);
       }}
@@ -58,7 +72,7 @@ function AuthFlow() {
 
 function RoleRedirect() {
   const { role } = useUser();
-  return <Navigate to={role === 'customer' ? '/customer' : '/contractor'} replace />;
+  return <Navigate to={role === 'customer' ? '/customer' : role === 'admin' ? '/admin' : '/contractor'} replace />;
 }
 
 function AppContent() {
@@ -77,6 +91,7 @@ function AppContent() {
         <Route path="contractor" element={<ContractorDashboard />} />
         <Route path="contractor/feed" element={<ContractorFeed />} />
         <Route path="contractor/jobs" element={<ContractorJobs />} />
+        <Route path="admin" element={<AdminDashboard />} />
         <Route path="profile" element={<Profile />} />
         <Route path="*" element={<RoleRedirect />} />
       </Route>

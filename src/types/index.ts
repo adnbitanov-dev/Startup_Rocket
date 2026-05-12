@@ -1,4 +1,4 @@
-export type UserRole = 'customer' | 'contractor';
+export type UserRole = 'customer' | 'contractor' | 'admin';
 
 export interface User {
   id: string;
@@ -40,6 +40,7 @@ export interface Milestone {
   };
 }
 
+
 export interface EscrowAccount {
   id: string;
   orderId: string;
@@ -73,7 +74,7 @@ export interface ChatMessage {
   id: number;
   orderId: string;
   type: 'direct' | 'dispute';
-  senderRole: 'customer' | 'contractor' | 'system' | 'agent';
+  senderRole: 'customer' | 'contractor' | 'admin' | 'system' | 'agent';
   text: string;
   time: string;
   name?: string;

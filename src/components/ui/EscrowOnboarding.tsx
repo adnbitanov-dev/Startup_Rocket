@@ -1,0 +1,161 @@
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Building2, Check, ShieldCheck, ArrowRight, Wallet } from 'lucide-react';
+
+import Button from '../ui/Button';
+import FaceIdModal from '../ui/FaceIdModal';
+
+interface EscrowOnboardingProps {
+  onComplete: () => void;
+}
+
+const BANKS = [
+  { id: 'kaspi', name: 'Kaspi.kz', color: '#f14635', logo: 'K' },
+  { id: 'halyk', name: 'Halyk Bank', color: '#008542', logo: 'H' },
+  { id: 'bcc', name: 'BCC.kz', color: '#ffcc00', logo: 'B' },
+  { id: 'forte', name: 'ForteBank', color: '#a035ff', logo: 'F' },
+];
+
+export default function EscrowOnboarding({ onComplete }: EscrowOnboardingProps) {
+  const [selectedBank, setSelectedBank] = useState<string | null>(null);
+  const [step, setStep] = useState<'select' | 'opening'>('select');
+  const [showFaceId, setShowFaceId] = useState(false);
+
+  const handleOpenAccount = () => {
+    setShowFaceId(true);
+  };
+
+  const handleFaceIdSuccess = () => {
+    setShowFaceId(false);
+    setStep('opening');
+    setTimeout(() => {
+      onComplete();
+    }, 2000);
+  };
+
+  return (
+    <div className="h-screen flex flex-col bg-background safe-area-pt safe-area-pb p-6">
+      <AnimatePresence mode="wait">
+        {step === 'select' ? (
+          <motion.div
+            key="select"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="flex-1 flex flex-col"
+          >
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+              <Building2 size={32} className="text-primary" />
+            </div>
+
+            <h1 className="text-2xl font-black text-text-main leading-tight mb-2">
+              Эскроу-счет
+            </h1>
+            <p className="text-sm text-text-muted mb-8 leading-relaxed">
+              Выберите банк, в котором будет открыт ваш цифровой эскроу-счет для безопасных сделок.
+            </p>
+
+            <div className="grid gap-3 flex-1 overflow-y-auto pb-4">
+              {BANKS.map((bank) => (
+                <button
+                  key={bank.id}
+                  onClick={() => setSelectedBank(bank.id)}
+                  className={`relative flex items-center gap-4 p-4 rounded-2xl border-2 transition-all duration-300 ${
+                    selectedBank === bank.id
+                      ? 'border-primary bg-white shadow-xl shadow-primary/10'
+                      : 'border-transparent bg-white/50 hover:bg-white'
+                  }`}
+                >
+                  <div 
+                    className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-inner"
+                    style={{ backgroundColor: bank.color }}
+                  >
+                    {bank.logo}
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="font-bold text-text-main">{bank.name}</p>
+                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-0.5">Лицензия №1.2.345</p>
+                  </div>
+                  {selectedBank === bank.id && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white"
+                    >
+                      <Check size={14} strokeWidth={3} />
+                    </motion.div>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <Button
+              fullWidth
+              size="lg"
+              disabled={!selectedBank}
+              onClick={handleOpenAccount}
+              icon={<ArrowRight size={20} />}
+              className="mt-4"
+            >
+              Открыть эскроу-счет
+            </Button>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="opening"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex-1 flex flex-col items-center justify-center text-center px-4"
+          >
+            <div className="relative mb-8">
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="w-32 h-32 rounded-full bg-primary/10 flex items-center justify-center"
+              >
+                <Wallet size={48} className="text-primary" />
+              </motion.div>
+              <motion.div
+                initial={{ strokeDashoffset: 100 }}
+                animate={{ strokeDashoffset: 0 }}
+                className="absolute inset-0"
+              >
+                <svg className="w-full h-full -rotate-90">
+                  <circle
+                    cx="64"
+                    cy="64"
+                    r="62"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    className="text-primary"
+                    strokeDasharray="390"
+                    strokeDashoffset="0"
+                  />
+                </svg>
+              </motion.div>
+            </div>
+
+            <h2 className="text-2xl font-black text-text-main mb-3">
+              Открываем счет...
+            </h2>
+            <p className="text-sm text-text-muted leading-relaxed">
+              Ваш цифровой эскроу-счет в {BANKS.find(b => b.id === selectedBank)?.name} создается. <br/>
+              Подождите несколько секунд.
+            </p>
+            
+            <div className="mt-12 flex items-center gap-2 text-xs font-bold text-success uppercase tracking-widest bg-success/10 px-4 py-2 rounded-full">
+              <ShieldCheck size={16} />
+              Подписано через EDS
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <FaceIdModal
+        isOpen={showFaceId}
+        onSuccess={handleFaceIdSuccess}
+      />
+    </div>
+  );
+}
