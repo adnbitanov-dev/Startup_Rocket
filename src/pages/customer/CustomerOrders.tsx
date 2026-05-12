@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Clock, AlertTriangle, ChevronDown, ChevronUp, MapPin, Users } from 'lucide-react';
+import { CheckCircle2, Clock, AlertTriangle, ChevronDown, ChevronUp, MapPin, Users, MessageSquare } from 'lucide-react';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
+import Skeleton from '../../components/ui/Skeleton';
 import FaceIdModal from '../../components/ui/FaceIdModal';
 import BeforeAfterSlider from '../../components/ui/BeforeAfterSlider';
 import { formatMoney, formatDate, statusLabels, statusVariants } from '../../mock/data';
 import { useData } from '../../store/DataContext';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 const container: any = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
 const item: any = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } } };
@@ -28,6 +30,14 @@ export default function CustomerOrders() {
   const [activeTab, setActiveTab] = useState(0);
   const [showFaceId, setShowFaceId] = useState(false);
   const [acceptingMsId, setAcceptingMsId] = useState<{orderId: string, msId: string} | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const tabs = ['Все', 'В работе', 'Завершённые'];
   const filtered = activeTab === 0 ? customerOrders
@@ -57,7 +67,24 @@ export default function CustomerOrders() {
         ))}
       </motion.div>
 
-      {filtered.map((order) => {
+      {isLoading ? (
+        <div className="space-y-4 mt-4">
+          {[1, 2].map(i => (
+            <Card key={i} className="p-4" padding="sm">
+              <div className="flex justify-between mb-3">
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-5 w-2/3" />
+                  <Skeleton className="h-4 w-1/3" />
+                </div>
+                <Skeleton className="h-6 w-16 rounded-full" />
+              </div>
+              <Skeleton className="h-1.5 w-full rounded-full mt-4" />
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <>
+          {filtered.map((order) => {
         const isExpanded = expandedOrder === order.id;
         const orderBids = getBidsForOrder(order.id);
         const completedMs = order.milestones.filter(m => m.status === 'accepted').length;
@@ -95,11 +122,19 @@ export default function CustomerOrders() {
                       {order.contractorId && (
                         <div className="flex items-center gap-3 p-3 rounded-xl bg-green-50/60 border border-green-100/50 mb-4">
                           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-white font-bold text-sm">С</div>
-                          <div>
-                            <p className="text-sm font-semibold">Сергей Мастеров</p>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold truncate">Сергей Мастеров</p>
                             <p className="text-xs text-text-muted">Исполнитель • ⭐ 4.8</p>
                           </div>
-                          <Badge variant="success" size="sm">Назначен</Badge>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/chat/${order.id}`);
+                            }}
+                            className="p-2 rounded-full bg-white text-primary shadow-sm border border-gray-100 hover:bg-gray-50 transition-colors"
+                          >
+                            <MessageSquare size={18} />
+                          </button>
                         </div>
                       )}
 
@@ -196,6 +231,8 @@ export default function CustomerOrders() {
           </motion.div>
         );
       })}
+        </>
+      )}
       
       <FaceIdModal 
         isOpen={showFaceId} 

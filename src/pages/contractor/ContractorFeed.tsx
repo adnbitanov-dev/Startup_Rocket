@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Clock, ChevronRight, Layers, Send } from 'lucide-react';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
+import Skeleton from '../../components/ui/Skeleton';
 import { formatMoney, timeAgo } from '../../mock/data';
 import { useData } from '../../store/DataContext';
 
@@ -12,11 +13,19 @@ const item: any = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, tra
 
 export default function ContractorFeed() {
   const { availableOrders, hasBidOnOrder, getBidsForOrder, submitBid } = useData();
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const [biddingOrderId, setBiddingOrderId] = useState<string | null>(null);
   const [bidPrice, setBidPrice] = useState('');
   const [bidMessage, setBidMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSubmitBid = async (orderId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -50,8 +59,33 @@ export default function ContractorFeed() {
         ))}
       </motion.div>
 
-      {/* Orders */}
-      {availableOrders.map((order) => {
+      {isLoading ? (
+        <div className="space-y-4 mt-4">
+          {[1, 2, 3].map(i => (
+            <Card key={i} className="p-4" padding="sm">
+              <div className="flex justify-between mb-3">
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+                <Skeleton className="h-6 w-16 rounded-full" />
+              </div>
+              <div className="space-y-2 mb-4">
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-4/5" />
+              </div>
+              <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
+                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-8 w-28 rounded-lg" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <>
+          {/* Orders */}
+          {availableOrders.map((order) => {
         const hasBid = hasBidOnOrder(order.id);
         const myBid = getBidsForOrder(order.id).find(b => b.contractorId === 'u-contractor');
         const isSelected = selectedOrder === order.id;
@@ -178,6 +212,8 @@ export default function ContractorFeed() {
           </motion.div>
         );
       })}
+        </>
+      )}
     </motion.div>
   );
 }

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { Camera, MapPin } from 'lucide-react';
+import { Camera, MapPin, MessageSquare } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
@@ -13,6 +14,7 @@ const item: any = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, tra
 
 
 export default function ContractorJobs() {
+  const navigate = useNavigate();
   const { contractorActiveJobs, updateMilestoneStatus } = useData();
   const [uploadingMsId, setUploadingMsId] = useState<string | null>(null);
 
@@ -52,9 +54,17 @@ export default function ContractorJobs() {
                 <h3 className="font-bold text-lg text-text-main">{job.title}</h3>
                 <Badge variant={statusVariants[job.status]} size="sm">{statusLabels[job.status]}</Badge>
               </div>
-              <p className="flex items-center gap-1 text-xs text-text-muted mb-3">
-                <MapPin size={12} /> {job.address}
-              </p>
+              <div className="flex items-center justify-between mb-3">
+                <p className="flex items-center gap-1 text-xs text-text-muted">
+                  <MapPin size={12} /> {job.address}
+                </p>
+                <button 
+                  onClick={() => navigate(`/chat/${job.id}`)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 text-primary text-xs font-medium hover:bg-blue-100 transition-colors"
+                >
+                  <MessageSquare size={14} /> Чат с заказчиком
+                </button>
+              </div>
 
               {/* Progress */}
               <div className="mb-4">

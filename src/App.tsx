@@ -10,6 +10,7 @@ import CustomerDashboard from './pages/customer/CustomerDashboard';
 import CustomerOrders from './pages/customer/CustomerOrders';
 import CreateOrder from './pages/customer/CreateOrder';
 import DisputeChat from './pages/customer/DisputeChat';
+import Chat from './pages/Chat';
 import ContractorDashboard from './pages/contractor/ContractorDashboard';
 import ContractorFeed from './pages/contractor/ContractorFeed';
 import ContractorJobs from './pages/contractor/ContractorJobs';
@@ -70,6 +71,7 @@ function AppContent() {
       {/* Standalone full-screen routes */}
       <Route path="customer/create-order" element={<CreateOrder />} />
       <Route path="customer/dispute" element={<DisputeChat />} />
+      <Route path="chat/:orderId" element={<Chat />} />
     </Routes>
   );
 }
