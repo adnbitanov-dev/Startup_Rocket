@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Clock, AlertTriangle, ChevronDown, ChevronUp, MapPin, Users, MessageSquare } from 'lucide-react';
+import { CheckCircle2, Clock, AlertTriangle, ChevronDown, ChevronUp, MapPin, Users, MessageSquare, Star } from 'lucide-react';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
@@ -120,6 +120,27 @@ export default function CustomerOrders() {
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
                     <div className="px-3 pb-4 border-t border-gray-50 pt-3">
                       <p className="text-sm text-text-muted mb-4">{order.description}</p>
+
+                      {/* Completed banner */}
+                      {order.status === 'completed' && (
+                        <div className="mb-4 p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-green-50 border border-green-100">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 rounded-full bg-success/15 flex items-center justify-center">
+                              <CheckCircle2 size={22} className="text-success" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-success">Заказ успешно завершён!</p>
+                              <p className="text-xs text-text-muted">Выплачено: {formatMoney(order.totalBudget)}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <p className="text-xs text-text-muted mr-1">Оцените исполнителя:</p>
+                            {[1,2,3,4,5].map(s => (
+                              <Star key={s} size={18} className="text-warning fill-warning" />
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
                       {order.contractorId && (
                         <div className="flex items-center gap-3 p-3 rounded-xl bg-green-50/60 border border-green-100/50 mb-4">

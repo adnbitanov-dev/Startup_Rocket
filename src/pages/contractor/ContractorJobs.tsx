@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Camera, MapPin, MessageSquare, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Camera, MapPin, MessageSquare, AlertCircle, CheckCircle2, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
@@ -84,6 +84,27 @@ export default function ContractorJobs() {
                   />
                 </div>
               </div>
+
+              {/* Completed banner */}
+              {job.status === 'completed' && (
+                <div className="mb-4 p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-green-50 border border-green-100">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-full bg-success/15 flex items-center justify-center">
+                      <CheckCircle2 size={22} className="text-success" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-success">Работы успешно завершены!</p>
+                      <p className="text-xs text-text-muted">Получено: {formatMoney(job.milestones.reduce((s, m) => s + m.amount, 0))}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <p className="text-xs text-text-muted mr-1">Ваш рейтинг:</p>
+                    {[1,2,3,4,5].map(s => (
+                      <Star key={s} size={18} className="text-warning fill-warning" />
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Milestones timeline */}
               <div className="space-y-2">

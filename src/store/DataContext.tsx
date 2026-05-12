@@ -191,9 +191,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
           }
         }
 
+        // Check if ALL milestones are now accepted → auto-complete the order
+        const allAccepted = updatedMilestones.every(m => m.status === 'accepted');
+
         return {
           ...o,
-          milestones: updatedMilestones
+          milestones: updatedMilestones,
+          status: allAccepted ? ('completed' as OrderStatus) : o.status
         };
       }
       return o;
