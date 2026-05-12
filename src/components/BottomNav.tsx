@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { Home, ClipboardList, User, Search, Briefcase } from 'lucide-react';
 import { useUser } from '../store/UserContext';
+import { motion } from 'framer-motion';
 
 export default function BottomNav() {
   const { role } = useUser();
@@ -21,23 +22,45 @@ export default function BottomNav() {
   const navItems = role === 'customer' ? customerItems : contractorItems;
 
   return (
-    <nav className="fixed bottom-0 w-full bg-white/95 backdrop-blur-xl border-t border-gray-100 ios-shadow safe-area-pb z-50">
-      <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
-        {navItems.map(({ to, icon: Icon, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={to === '/customer' || to === '/contractor'}
-            className={({ isActive }) =>
-              `flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors duration-200 ${
-                isActive ? 'text-primary' : 'text-text-muted hover:text-gray-600'
-              }`
-            }
-          >
-            <Icon size={22} strokeWidth={2.2} />
-            <span className="text-[10px] font-medium">{label}</span>
-          </NavLink>
-        ))}
+    <nav className="fixed bottom-0 w-full safe-area-pb z-50">
+      {/* Blurred background */}
+      <div className="glass border-t border-white/60 shadow-2xl shadow-black/10">
+        <div className="flex justify-around items-center h-16 max-w-lg mx-auto px-2">
+          {navItems.map(({ to, icon: Icon, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === '/customer' || to === '/contractor'}
+              className="flex-1"
+            >
+              {({ isActive }) => (
+                <motion.div
+                  whileTap={{ scale: 0.88 }}
+                  className="flex flex-col items-center justify-center gap-1 py-1"
+                >
+                  <div className={`
+                    w-10 h-8 flex items-center justify-center rounded-xl transition-all duration-300
+                    ${isActive
+                      ? 'bg-gradient-to-br from-primary to-violet-600 glow-primary'
+                      : 'bg-transparent'
+                    }
+                  `}>
+                    <Icon
+                      size={20}
+                      strokeWidth={isActive ? 2.5 : 2}
+                      className={isActive ? 'text-white' : 'text-text-muted'}
+                    />
+                  </div>
+                  <span className={`text-[9px] font-semibold tracking-wide transition-colors ${
+                    isActive ? 'text-primary' : 'text-text-muted'
+                  }`}>
+                    {label}
+                  </span>
+                </motion.div>
+              )}
+            </NavLink>
+          ))}
+        </div>
       </div>
     </nav>
   );

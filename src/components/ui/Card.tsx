@@ -5,11 +5,13 @@ interface CardProps {
   children: ReactNode;
   className?: string;
   onClick?: () => void;
-  padding?: 'sm' | 'md' | 'lg';
+  padding?: 'none' | 'sm' | 'md' | 'lg';
   hoverable?: boolean;
+  variant?: 'default' | 'glass' | 'gradient';
 }
 
 const paddingStyles = {
+  none: '',
   sm: 'p-3',
   md: 'p-4',
   lg: 'p-5',
@@ -21,15 +23,22 @@ export default function Card({
   onClick,
   padding = 'md',
   hoverable = false,
+  variant = 'default',
 }: CardProps) {
+  const base = variant === 'glass'
+    ? 'glass'
+    : variant === 'gradient'
+    ? 'gradient-border bg-white'
+    : 'card-premium';
+
   return (
     <motion.div
-      whileTap={onClick ? { scale: 0.98 } : undefined}
+      whileTap={onClick ? { scale: 0.985 } : undefined}
       className={`
-        bg-surface rounded-2xl ios-shadow border border-gray-50
+        ${base}
         ${paddingStyles[padding]}
-        ${hoverable ? 'hover:shadow-lg hover:border-gray-100 transition-shadow duration-300' : ''}
-        ${onClick ? 'cursor-pointer active:bg-gray-50' : ''}
+        ${hoverable ? 'hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300' : ''}
+        ${onClick ? 'cursor-pointer' : ''}
         ${className}
       `}
       onClick={onClick}
