@@ -78,12 +78,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const broadcastState = (newOrders: Order[], newBids: Bid[], newMessages: ChatMessage[]) => {
-    const serverUrl = window.location.hostname === 'localhost' 
+    const serverUrl = (window.location.hostname === 'localhost' && window.location.port !== '3000')
       ? 'http://localhost:3001' 
-      : `http://${window.location.hostname}:3001`;
+      : window.location.origin;
+      
     const socket = io(serverUrl);
     socket.emit('update_state', { orders: newOrders, bids: newBids, messages: newMessages });
-    setTimeout(() => socket.disconnect(), 500); // Disconnect after emitting
+    setTimeout(() => socket.disconnect(), 500); 
   };
   // -----------------------------
 
