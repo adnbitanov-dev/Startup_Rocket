@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useData } from '../../store/DataContext';
 import { useUser } from '../../store/UserContext';
 
-const ease = [0.32, 0.72, 0, 1];
+const ease: [number, number, number, number] = [0.32, 0.72, 0, 1];
 const stagger: any = { hidden: {}, show: { transition: { staggerChildren: 0.04 } } };
 const pop: any = { hidden: { opacity: 0, scale: 0.95 }, show: { opacity: 1, scale: 1, transition: { duration: 0.4, ease } } };
 
@@ -116,7 +116,7 @@ export default function CustomerDashboard() {
                   className="h-full rounded-full bg-[#1D1D1F]"
                   initial={{ width: 0 }}
                   animate={{ width: `${progressPct}%` }}
-                  transition={{ duration: 0.8, ease }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
                 />
               </div>
               <div className="flex justify-between mt-2">

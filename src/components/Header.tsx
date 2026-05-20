@@ -4,7 +4,7 @@ import { useUser } from '../store/UserContext';
 import { useState } from 'react';
 
 export default function Header() {
-  const { userName, role } = useUser();
+  const { userName } = useUser();
   const [notifOpen, setNotifOpen] = useState(false);
 
   const initials = userName?.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || 'ГС';
