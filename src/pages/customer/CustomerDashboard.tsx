@@ -1,15 +1,33 @@
 import { motion } from 'framer-motion';
-import { Wallet, TrendingUp, Clock, ChevronRight, Shield, Plus, Zap, BarChart3 } from 'lucide-react';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
-
-import { customerEscrow, formatMoney, statusLabels, statusVariants } from '../../mock/data';
+import { ChevronRight, Plus, Shield, Hammer, CheckCheck, MessageCircle, Banknote } from 'lucide-react';
+import { customerEscrow, formatMoney, statusLabels } from '../../mock/data';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../../store/DataContext';
 import { useUser } from '../../store/UserContext';
 
-const container: any = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08 } } };
-const item: any = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 280, damping: 22 } } };
+const ease = [0.32, 0.72, 0, 1];
+const stagger: any = { hidden: {}, show: { transition: { staggerChildren: 0.04 } } };
+const pop: any = { hidden: { opacity: 0, scale: 0.95 }, show: { opacity: 1, scale: 1, transition: { duration: 0.4, ease } } };
+
+function Widget({ children, className = '', span = 1, onClick }: {
+  children: React.ReactNode; className?: string; span?: 1 | 2; onClick?: () => void;
+}) {
+  return (
+    <motion.div
+      variants={pop}
+      whileTap={onClick ? { scale: 0.97 } : undefined}
+      onClick={onClick}
+      className={`
+        rounded-3xl p-5 relative overflow-hidden
+        ${span === 2 ? 'col-span-2' : ''}
+        ${onClick ? 'cursor-pointer active:brightness-[0.97] transition-all' : ''}
+        ${className}
+      `}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 export default function CustomerDashboard() {
   const navigate = useNavigate();
@@ -18,184 +36,168 @@ export default function CustomerDashboard() {
   const firstName = userName?.split(' ')[0] || 'Клиент';
   const activeOrders = customerOrders.filter((o) => o.status !== 'completed');
   const completedOrders = customerOrders.filter((o) => o.status === 'completed');
-  const currentMilestone = customerOrders[0]?.milestones.find((m) => m.status === 'in_progress');
-  const completedMs = customerOrders[0]?.milestones.filter(m => m.status === 'accepted').length || 0;
-  const totalMs = customerOrders[0]?.milestones.length || 1;
+  const currentOrder = customerOrders.find(o => o.status === 'in_progress');
+  const currentMilestone = currentOrder?.milestones.find((m) => m.status === 'in_progress');
+  const completedMs = currentOrder?.milestones.filter(m => m.status === 'accepted').length || 0;
+  const totalMs = currentOrder?.milestones.length || 1;
+  const progressPct = Math.round((completedMs / totalMs) * 100);
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-4 pb-6">
+    <motion.div variants={stagger} initial="hidden" animate="show" className="pb-8 -mx-4 px-4">
 
-      {/* Hero greeting */}
-      <motion.div variants={item} className="pt-1">
-        <p className="text-text-muted text-sm font-medium">Добро пожаловать 👋</p>
-        <h1 className="text-2xl font-bold text-text-main mt-0.5 tracking-tight">{firstName}</h1>
+      <motion.div variants={pop} className="mb-5 px-1">
+        <h1 className="text-[26px] font-extrabold text-text-main tracking-tight">
+          Привет, {firstName}
+        </h1>
       </motion.div>
 
-      {/* Escrow hero card */}
-      <motion.div variants={item}>
-        <div className="relative overflow-hidden rounded-2xl gradient-hero p-5 glow-primary">
-          {/* Decorative circles */}
-          <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full bg-white/10" />
-          <div className="absolute -bottom-10 -left-4 w-28 h-28 rounded-full bg-white/5" />
+      <div className="grid grid-cols-2 gap-3">
 
+        {/* ─── ESCROW ─── */}
+        <Widget span={2} className="bg-[#1C1C1E] text-white min-h-[160px]">
+          <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-white/[0.03] blur-3xl" />
           <div className="relative">
-            <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-2 mb-4">
+              <Shield size={14} className="text-white/40" />
+              <span className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.1em]">
+                Эскроу-баланс
+              </span>
+            </div>
+            <p className="text-[40px] font-extrabold tracking-tight leading-none">
+              {formatMoney(customerEscrow.heldAmount)}
+            </p>
+            <p className="text-[13px] text-white/30 mt-1.5 font-medium">
+              из {formatMoney(customerEscrow.totalAmount)} защищено
+            </p>
+            <div className="flex gap-8 mt-5">
               <div>
-                <p className="text-white/70 text-xs font-semibold uppercase tracking-widest flex items-center gap-1.5">
-                  <Shield size={12} /> Эскроу-защита
-                </p>
-                <p className="text-4xl font-black mt-1.5 text-white tracking-tight">
-                  {formatMoney(customerEscrow.heldAmount)}
-                </p>
-                <p className="text-white/50 text-xs mt-0.5">
-                  из {formatMoney(customerEscrow.totalAmount)} заблокировано
-                </p>
+                <p className="text-[10px] text-white/25 uppercase tracking-wider font-semibold">Выплачено</p>
+                <p className="text-[15px] font-bold text-white/70 mt-0.5">{formatMoney(customerEscrow.releasedAmount)}</p>
               </div>
-              <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
-                <Wallet size={24} className="text-white" />
-              </div>
-            </div>
-
-            <div className="flex gap-4 pt-3 border-t border-white/15">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center">
-                  <TrendingUp size={13} className="text-white" />
-                </div>
-                <div>
-                  <p className="text-[10px] text-white/50 uppercase tracking-wider">Выплачено</p>
-                  <p className="text-sm font-bold text-white">{formatMoney(customerEscrow.releasedAmount)}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center">
-                  <Clock size={13} className="text-white" />
-                </div>
-                <div>
-                  <p className="text-[10px] text-white/50 uppercase tracking-wider">Активных</p>
-                  <p className="text-sm font-bold text-white">{activeOrders.length} заказов</p>
-                </div>
+              <div>
+                <p className="text-[10px] text-white/25 uppercase tracking-wider font-semibold">В работе</p>
+                <p className="text-[15px] font-bold text-white/70 mt-0.5">{activeOrders.length} проектов</p>
               </div>
             </div>
           </div>
-        </div>
-      </motion.div>
+        </Widget>
 
-      {/* Stats row */}
-      <motion.div variants={item} className="grid grid-cols-3 gap-3">
-        {[
-          { icon: <Zap size={18} className="text-indigo-500" />, value: activeOrders.length, label: 'В работе', bg: 'bg-indigo-50' },
-          { icon: <BarChart3 size={18} className="text-emerald-500" />, value: completedOrders.length, label: 'Завершено', bg: 'bg-emerald-50' },
-          { icon: <TrendingUp size={18} className="text-amber-500" />, value: '4.9 ⭐', label: 'Рейтинг', bg: 'bg-amber-50' },
-        ].map((s, i) => (
-          <Card key={i} padding="sm" className="text-center">
-            <div className={`w-9 h-9 ${s.bg} rounded-xl flex items-center justify-center mx-auto mb-2`}>
-              {s.icon}
-            </div>
-            <p className="text-lg font-black text-text-main leading-none">{s.value}</p>
-            <p className="text-[10px] text-text-muted mt-0.5 font-medium">{s.label}</p>
-          </Card>
-        ))}
-      </motion.div>
-
-      {/* Current milestone widget */}
-      {currentMilestone && (
-        <motion.div variants={item}>
-          <div className="flex items-center justify-between mb-2.5">
-            <h2 className="text-sm font-bold text-text-main uppercase tracking-wider">Текущий этап</h2>
-            <Badge variant="warning">В работе</Badge>
+        {/* ─── STATS ─── */}
+        <Widget className="bg-[#F2F2F7] min-h-[120px]" onClick={() => navigate('/customer/orders')}>
+          <div className="w-9 h-9 rounded-2xl bg-black/[0.05] flex items-center justify-center mb-3">
+            <Hammer size={18} className="text-[#636366]" />
           </div>
-          <Card hoverable onClick={() => navigate('/customer/orders')} variant="gradient">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-text-muted font-medium">{customerOrders[0].title}</p>
-                <p className="text-base font-bold text-text-main mt-0.5">{currentMilestone.title}</p>
-              </div>
-              <div className="bg-primary/10 rounded-xl px-2.5 py-1.5 ml-2">
-                <p className="text-xs font-bold text-primary">{formatMoney(currentMilestone.amount)}</p>
-              </div>
-            </div>
+          <p className="text-[32px] font-extrabold text-text-main leading-none">{activeOrders.length}</p>
+          <p className="text-[12px] text-text-muted font-semibold mt-1">В работе</p>
+        </Widget>
 
-            {/* Progress */}
-            <div>
-              <div className="flex justify-between text-[11px] text-text-muted mb-1.5 font-medium">
-                <span>Прогресс работ</span>
-                <span className="text-primary font-semibold">{completedMs}/{totalMs} этапов</span>
-              </div>
-              <div className="h-2 bg-secondary rounded-full overflow-hidden">
+        <Widget className="bg-[#F2F2F7] min-h-[120px]" onClick={() => navigate('/customer/orders')}>
+          <div className="w-9 h-9 rounded-2xl bg-black/[0.05] flex items-center justify-center mb-3">
+            <CheckCheck size={18} className="text-[#636366]" />
+          </div>
+          <p className="text-[32px] font-extrabold text-text-main leading-none">{completedOrders.length}</p>
+          <p className="text-[12px] text-text-muted font-semibold mt-1">Завершено</p>
+        </Widget>
+
+        {/* ─── CURRENT MILESTONE ─── */}
+        {currentMilestone && currentOrder && (
+          <Widget span={2} className="bg-[#F2F2F7]" onClick={() => navigate('/customer/orders')}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-semibold text-text-muted uppercase tracking-[0.08em]">
+                Текущий этап
+              </span>
+              <span className="text-[13px] font-bold text-text-main">{formatMoney(currentMilestone.amount)}</span>
+            </div>
+            <p className="text-[11px] text-text-muted font-medium">{currentOrder.title}</p>
+            <p className="text-[19px] font-bold text-text-main mt-0.5 leading-snug">{currentMilestone.title}</p>
+            <div className="mt-4">
+              <div className="h-[5px] bg-black/[0.06] rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full rounded-full"
-                  style={{ background: 'linear-gradient(90deg, #6366f1, #8b5cf6)' }}
+                  className="h-full rounded-full bg-[#1D1D1F]"
                   initial={{ width: 0 }}
-                  animate={{ width: `${(completedMs / totalMs) * 100}%` }}
-                  transition={{ duration: 1.2, ease: 'easeOut', delay: 0.4 }}
+                  animate={{ width: `${progressPct}%` }}
+                  transition={{ duration: 0.8, ease }}
                 />
               </div>
+              <div className="flex justify-between mt-2">
+                <span className="text-[11px] text-text-muted font-medium">{completedMs} из {totalMs} этапов</span>
+                <span className="text-[11px] font-semibold text-text-main">{progressPct}%</span>
+              </div>
             </div>
-            <div className="flex justify-end mt-2">
-              <ChevronRight size={16} className="text-text-muted" />
-            </div>
-          </Card>
-        </motion.div>
-      )}
+          </Widget>
+        )}
 
-      {/* Orders list */}
-      <motion.div variants={item}>
-        <div className="flex items-center justify-between mb-2.5">
-          <h2 className="text-sm font-bold text-text-main uppercase tracking-wider">Мои заказы</h2>
-          <button className="text-xs text-primary font-semibold" onClick={() => navigate('/customer/orders')}>
-            Все →
-          </button>
-        </div>
-        <div className="space-y-2.5">
-          {customerOrders.slice(0, 3).map((order, idx) => (
-            <motion.div
-              key={order.id}
-              initial={{ opacity: 0, x: -12 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 * idx }}
+        {/* ─── ORDERS LIST ─── */}
+        <Widget span={2} className="bg-[#F2F2F7] !p-0">
+          <div className="flex items-center justify-between px-5 pt-5 pb-3">
+            <span className="text-[11px] font-semibold text-text-muted uppercase tracking-[0.08em]">
+              Мои проекты
+            </span>
+            <button
+              onClick={(e) => { e.stopPropagation(); navigate('/customer/orders'); }}
+              className="text-[12px] text-text-main font-semibold flex items-center gap-0.5"
             >
-              <Card hoverable onClick={() => navigate('/customer/orders')}>
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                    order.status === 'completed' ? 'bg-emerald-50' :
-                    order.status === 'in_progress' ? 'bg-indigo-50' : 'bg-amber-50'
+              Все <ChevronRight size={13} />
+            </button>
+          </div>
+          <div className="divide-y divide-black/[0.04]">
+            {customerOrders.slice(0, 3).map((order) => {
+              const isActive = order.status === 'in_progress';
+              const isCompleted = order.status === 'completed';
+              return (
+                <motion.div
+                  key={order.id}
+                  whileTap={{ backgroundColor: 'rgba(0,0,0,0.02)' }}
+                  onClick={() => navigate('/customer/orders')}
+                  className="flex items-center gap-3.5 px-5 py-3.5 cursor-pointer"
+                >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                    isCompleted ? 'bg-[#34C759]/10' : isActive ? 'bg-black/[0.05]' : 'bg-[#FF9F0A]/10'
                   }`}>
-                    <span className="text-lg">
-                      {order.status === 'completed' ? '✅' : order.status === 'in_progress' ? '🔨' : '📋'}
-                    </span>
+                    {isCompleted ? <CheckCheck size={17} className="text-[#34C759]" /> :
+                     isActive ? <Hammer size={17} className="text-[#636366]" /> :
+                     <Banknote size={17} className="text-[#FF9F0A]" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <p className="font-semibold text-sm truncate text-text-main">{order.title}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs text-text-muted truncate">{order.address}</p>
-                    </div>
+                    <p className="text-[14px] font-semibold text-text-main truncate">{order.title}</p>
+                    <p className="text-[12px] text-text-muted truncate mt-0.5">{order.address}</p>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-bold text-primary">{formatMoney(order.totalBudget)}</p>
-                    <Badge variant={statusVariants[order.status]} size="sm">{statusLabels[order.status]}</Badge>
+                    <p className="text-[14px] font-bold text-text-main">{formatMoney(order.totalBudget)}</p>
+                    <p className={`text-[10px] font-semibold mt-0.5 ${
+                      isCompleted ? 'text-[#34C759]' : isActive ? 'text-[#636366]' : 'text-[#FF9F0A]'
+                    }`}>{statusLabels[order.status]}</p>
                   </div>
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Create order CTA */}
-      <motion.div variants={item}>
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          onClick={() => navigate('/customer/create-order')}
-          className="w-full gradient-hero text-white font-bold text-sm py-4 rounded-2xl flex items-center justify-center gap-2.5 glow-primary"
-        >
-          <div className="w-7 h-7 rounded-xl bg-white/20 flex items-center justify-center">
-            <Plus size={18} className="text-white" />
+                </motion.div>
+              );
+            })}
           </div>
-          Создать новый заказ
-        </motion.button>
-      </motion.div>
+        </Widget>
+
+        {/* ─── QUICK ACTIONS ─── */}
+        <Widget
+          className="bg-[#1D1D1F] min-h-[100px]"
+          onClick={() => navigate('/customer/create-order')}
+        >
+          <div className="w-9 h-9 rounded-2xl bg-white/10 flex items-center justify-center mb-3">
+            <Plus size={18} className="text-white" strokeWidth={2.5} />
+          </div>
+          <p className="text-[14px] font-bold text-white leading-snug">Новый проект</p>
+          <p className="text-[11px] text-white/40 font-medium mt-0.5">Создать заказ</p>
+        </Widget>
+
+        <Widget
+          className="bg-[#F2F2F7] min-h-[100px]"
+          onClick={() => currentOrder ? navigate(`/chat/${currentOrder.id}`) : undefined}
+        >
+          <div className="w-9 h-9 rounded-2xl bg-black/[0.05] flex items-center justify-center mb-3">
+            <MessageCircle size={18} className="text-[#636366]" />
+          </div>
+          <p className="text-[14px] font-bold text-text-main leading-snug">Сообщения</p>
+          <p className="text-[11px] text-text-muted font-medium mt-0.5">2 новых</p>
+        </Widget>
+
+      </div>
     </motion.div>
   );
 }

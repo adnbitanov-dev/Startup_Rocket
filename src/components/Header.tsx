@@ -1,4 +1,4 @@
-import { Bell, Sparkles } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '../store/UserContext';
 import { useState } from 'react';
@@ -11,45 +11,25 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-40 safe-area-pt">
-      {/* Frosted glass bar */}
-      <div className="glass border-b border-white/60 px-4 h-14 flex items-center justify-between">
-        {/* Logo */}
-        <div className="flex items-center gap-2.5">
-          <motion.div
-            whileTap={{ scale: 0.92 }}
-            className="w-8 h-8 rounded-xl gradient-hero flex items-center justify-center glow-primary"
-          >
-            <Sparkles size={15} className="text-white" strokeWidth={2.5} />
-          </motion.div>
-          <div>
-            <span className="text-[15px] font-bold tracking-tight gradient-text">ГарантСтрой</span>
-          </div>
-        </div>
+      <div className="bg-white/80 backdrop-blur-xl border-b border-black/[0.04] px-5 h-12 flex items-center justify-between">
+        {/* Logo — minimal */}
+        <span className="text-[17px] font-extrabold tracking-tight text-text-main">
+          ГарантСтрой
+        </span>
 
-        <div className="flex items-center gap-2">
-          {/* Role badge */}
-          <div className={`px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-wide ${
-            role === 'customer'
-              ? 'bg-indigo-50 text-indigo-600'
-              : role === 'admin'
-              ? 'bg-slate-900 text-white shadow-lg shadow-black/10'
-              : 'bg-emerald-50 text-emerald-600'
-          }`}>
-            {role === 'customer' ? '👤 Заказчик' : role === 'admin' ? '🛡️ Admin' : '🔨 Исполнитель'}
-          </div>
-
+        <div className="flex items-center gap-3">
           {/* Notifications */}
           <motion.button
             whileTap={{ scale: 0.88 }}
             onClick={() => setNotifOpen(!notifOpen)}
-            className="relative w-9 h-9 flex items-center justify-center rounded-xl bg-white/80 shadow-sm border border-white hover:bg-white transition-colors"
+            className="relative w-8 h-8 flex items-center justify-center rounded-full hover:bg-secondary transition-colors"
           >
-            <Bell size={18} className="text-text-main" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full border-2 border-white" />
+            <Bell size={18} className="text-text-main" strokeWidth={1.8} />
+            <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-danger rounded-full" />
           </motion.button>
 
           {/* Avatar */}
-          <div className="w-9 h-9 rounded-xl gradient-hero flex items-center justify-center text-white text-xs font-bold shadow-sm">
+          <div className="w-8 h-8 rounded-full bg-text-main flex items-center justify-center text-white text-[11px] font-bold tracking-wide">
             {initials}
           </div>
         </div>
@@ -58,26 +38,36 @@ export default function Header() {
       {/* Notification drawer */}
       <AnimatePresence>
         {notifOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="absolute top-full left-0 right-0 mx-4 mt-2 card-premium p-3 space-y-2 z-50"
-          >
-            {[
-              { icon: '✅', text: 'Этап «Демонтаж» принят', time: '2 мин назад' },
-              { icon: '💬', text: 'Новое сообщение от Сергея', time: '15 мин назад' },
-              { icon: '🔔', text: 'Новый отклик на ваш заказ', time: '1 ч назад' },
-            ].map((n, i) => (
-              <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-secondary transition-colors cursor-pointer">
-                <span className="text-lg">{n.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-text-main truncate">{n.text}</p>
-                  <p className="text-[10px] text-text-muted">{n.time}</p>
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40"
+              onClick={() => setNotifOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -4, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -4, scale: 0.98 }}
+              transition={{ duration: 0.2 }}
+              className="absolute top-full right-4 mt-1 w-72 card-premium p-2 z-50"
+            >
+              {[
+                { text: 'Этап «Демонтаж» принят', time: '2 мин назад' },
+                { text: 'Новое сообщение от Сергея', time: '15 мин назад' },
+                { text: 'Новый отклик на ваш заказ', time: '1 ч назад' },
+              ].map((n, i) => (
+                <div key={i} className="flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-secondary/80 transition-colors cursor-pointer">
+                  <div className="w-2 h-2 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-medium text-text-main leading-snug">{n.text}</p>
+                    <p className="text-[11px] text-text-muted mt-0.5">{n.time}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </motion.div>
+              ))}
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </header>
