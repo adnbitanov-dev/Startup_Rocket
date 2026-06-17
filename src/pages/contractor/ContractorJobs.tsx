@@ -61,9 +61,9 @@ export default function ContractorJobs() {
                 <p className="flex items-center gap-1 text-xs text-text-muted">
                   <MapPin size={12} /> {job.address}
                 </p>
-                <button 
+                <button
                   onClick={() => navigate(`/chat/${job.id}`)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 text-primary text-xs font-medium hover:bg-blue-100 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F2F2F7] text-text-main text-xs font-medium transition-colors"
                 >
                   <MessageSquare size={14} /> Чат с заказчиком
                 </button>
@@ -75,9 +75,9 @@ export default function ContractorJobs() {
                   <span>Общий прогресс</span>
                   <span>{completedMs}/{job.milestones.length} этапов</span>
                 </div>
-                <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-[5px] bg-black/[0.06] rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-success to-emerald-400 rounded-full"
+                    className="h-full bg-[#1D1D1F] rounded-full"
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
                     transition={{ duration: 1, ease: 'easeOut' }}
@@ -87,13 +87,13 @@ export default function ContractorJobs() {
 
               {/* Completed banner */}
               {job.status === 'completed' && (
-                <div className="mb-4 p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-green-50 border border-green-100">
+                <div className="mb-4 p-4 rounded-2xl bg-[#F2F2F7]">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-full bg-success/15 flex items-center justify-center">
-                      <CheckCircle2 size={22} className="text-success" />
+                    <div className="w-10 h-10 rounded-full bg-black/[0.05] flex items-center justify-center">
+                      <CheckCircle2 size={22} className="text-[#34C759]" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-success">Работы успешно завершены!</p>
+                      <p className="text-sm font-bold text-text-main">Работы успешно завершены!</p>
                       <p className="text-xs text-text-muted">Получено: {formatMoney(job.milestones.reduce((s, m) => s + m.amount, 0))}</p>
                     </div>
                   </div>
@@ -121,7 +121,7 @@ export default function ContractorJobs() {
                       }`} />
                       
                       <div className={`mb-1 flex items-center justify-between ${!isCompleted && !isCurrent && !isReview ? 'opacity-50' : ''}`}>
-                        <h4 className={`font-semibold ${isCompleted ? 'text-success' : 'text-text-main'}`}>
+                        <h4 className={`font-semibold ${isCompleted ? 'text-text-main' : 'text-text-main'}`}>
                           {ms.title}
                         </h4>
                         <Badge variant={statusVariants[ms.status]} size="sm">
@@ -191,7 +191,7 @@ export default function ContractorJobs() {
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-text-muted">Получено</p>
-                  <p className="text-base font-bold text-success">
+                  <p className="text-base font-bold text-text-main">
                     {formatMoney(job.milestones.filter(m => m.status === 'accepted').reduce((sum, m) => sum + m.amount, 0))}
                   </p>
                 </div>

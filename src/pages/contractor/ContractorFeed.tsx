@@ -53,7 +53,7 @@ export default function ContractorFeed() {
           <button
             key={f}
             className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-              i === 0 ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-secondary text-text-muted hover:bg-gray-200'
+              i === 0 ? 'bg-[#1D1D1F] text-white' : 'bg-[#F2F2F7] text-text-muted'
             }`}
           >
             {f}
@@ -122,7 +122,7 @@ export default function ContractorFeed() {
                 {/* Budget & milestones summary */}
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
                   <div>
-                    <p className="text-xl font-bold text-success">{formatMoney(order.totalBudget)}</p>
+                    <p className="text-xl font-bold text-text-main">{formatMoney(order.totalBudget)}</p>
                   </div>
                   <div className="flex items-center gap-1 text-xs text-text-muted">
                     <Layers size={13} /> {order.milestones.length} этапов

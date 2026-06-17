@@ -5,11 +5,11 @@ interface BadgeProps {
 }
 
 const variantStyles = {
-  primary: 'bg-indigo-50 text-indigo-600 border border-indigo-100',
-  success: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
-  warning: 'bg-amber-50 text-amber-700 border border-amber-100',
-  danger: 'bg-red-50 text-red-600 border border-red-100',
-  neutral: 'bg-gray-50 text-gray-500 border border-gray-100',
+  primary: 'bg-[#1D1D1F] text-white',
+  success: 'bg-black/[0.05] text-[#1D1D1F]',
+  warning: 'bg-black/[0.05] text-[#1D1D1F]',
+  danger:  'bg-[#FF3B30]/10 text-[#FF3B30]',
+  neutral: 'bg-black/[0.05] text-[#636366]',
 };
 
 const sizeStyles = {
@@ -19,9 +19,7 @@ const sizeStyles = {
 
 export default function Badge({ children, variant = 'primary', size = 'md' }: BadgeProps) {
   return (
-    <span
-      className={`inline-flex items-center font-semibold rounded-full uppercase ${variantStyles[variant]} ${sizeStyles[size]}`}
-    >
+    <span className={`inline-flex items-center font-semibold rounded-full uppercase ${variantStyles[variant]} ${sizeStyles[size]}`}>
       {children}
     </span>
   );
