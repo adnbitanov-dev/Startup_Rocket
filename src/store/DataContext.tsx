@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 // @ts-ignore
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 import type { Order, Bid, Milestone, OrderStatus, BidStatus, ChatMessage } from '../types';
 import { useUser } from './UserContext';
 import { 
@@ -47,20 +47,22 @@ const initialBids = [
 ];
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const { userId, userName } = useUser();
+  const { userId, userName, isAuthenticated } = useUser();
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [bids, setBids] = useState<Bid[]>(initialBids);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const socketRef = useRef<Socket | null>(null);
 
   // --- Real-time Sync Logic ---
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const serverUrl = (window.location.hostname === 'localhost' && window.location.port !== '3000')
-      ? 'http://localhost:3001' 
+      ? 'http://localhost:3001'
       : window.location.origin;
-      
-    const s = io(serverUrl);
-    // @ts-ignore
-    window.socket = s;
+
+    const s = io(serverUrl, { reconnectionAttempts: 5 });
+    socketRef.current = s;
 
     s.on('state_sync', (state: any) => {
       if (state && state.orders) {
@@ -72,15 +74,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
     return () => {
       s.disconnect();
+      socketRef.current = null;
     };
-  }, []);
+  }, [isAuthenticated]);
 
   const broadcastState = (newOrders: Order[], newBids: Bid[], newMessages: ChatMessage[]) => {
-    // @ts-ignore
-    if (window.socket) {
-      // @ts-ignore
-      window.socket.emit('update_state', { orders: newOrders, bids: newBids, messages: newMessages });
-    }
+    socketRef.current?.emit('update_state', { orders: newOrders, bids: newBids, messages: newMessages });
   };
   // -----------------------------
 

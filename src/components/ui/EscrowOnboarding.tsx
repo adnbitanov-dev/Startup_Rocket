@@ -10,11 +10,51 @@ interface EscrowOnboardingProps {
 }
 
 const BANKS = [
-  { id: 'kaspi', name: 'Kaspi.kz', color: '#f14635', logo: 'K' },
-  { id: 'halyk', name: 'Halyk Bank', color: '#008542', logo: 'H' },
-  { id: 'bcc', name: 'BCC.kz', color: '#ffcc00', logo: 'B' },
-  { id: 'forte', name: 'ForteBank', color: '#a035ff', logo: 'F' },
+  { id: 'kaspi', name: 'Kaspi Bank', color: '#f14635' },
+  { id: 'halyk', name: 'Halyk Bank', color: '#008542' },
+  { id: 'bcc', name: 'Bank CenterCredit', color: '#003087' },
+  { id: 'forte', name: 'ForteBank', color: '#7B2D8E' },
 ];
+
+// Inline SVG logos resembling real bank branding
+function BankLogo({ id, size = 28 }: { id: string; size?: number }) {
+  switch (id) {
+    case 'kaspi':
+      return (
+        <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+          <rect width="40" height="40" rx="8" fill="#F14635"/>
+          <path d="M12 10h4v8l8-8h5l-9 9 10 11h-5.5L16 22v8h-4V10z" fill="white"/>
+        </svg>
+      );
+    case 'halyk':
+      return (
+        <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+          <rect width="40" height="40" rx="8" fill="#008542"/>
+          <path d="M8 20c0-6.627 5.373-12 12-12s12 5.373 12 12-5.373 12-12 12S8 26.627 8 20z" fill="none" stroke="white" strokeWidth="2"/>
+          <path d="M14 14v12M26 14v12M14 20h12" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+        </svg>
+      );
+    case 'bcc':
+      return (
+        <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+          <rect width="40" height="40" rx="8" fill="#003087"/>
+          <path d="M10 12h6c3 0 5 1.5 5 4s-2 4-5 4h-6V12zM10 20h7c3 0 5 1.5 5 4s-2 4-5 4h-7V20z" fill="white"/>
+          <circle cx="30" cy="16" r="4" fill="#FFD700"/>
+          <circle cx="30" cy="26" r="4" fill="#FFD700"/>
+        </svg>
+      );
+    case 'forte':
+      return (
+        <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+          <rect width="40" height="40" rx="8" fill="#7B2D8E"/>
+          <path d="M12 10h16v4H16.5v4H26v4H16.5v8H12V10z" fill="white"/>
+          <circle cx="30" cy="12" r="3" fill="#00E5A0"/>
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
 
 export default function EscrowOnboarding({ onComplete }: EscrowOnboardingProps) {
   const [selectedBank, setSelectedBank] = useState<string | null>(null);
@@ -66,15 +106,11 @@ export default function EscrowOnboarding({ onComplete }: EscrowOnboardingProps) 
                       : 'border-transparent bg-white/50 hover:bg-white'
                   }`}
                 >
-                  <div 
-                    className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-inner"
-                    style={{ backgroundColor: bank.color }}
-                  >
-                    {bank.logo}
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden">
+                    <BankLogo id={bank.id} size={48} />
                   </div>
                   <div className="flex-1 text-left">
                     <p className="font-bold text-text-main">{bank.name}</p>
-                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-0.5">Лицензия №1.2.345</p>
                   </div>
                   {selectedBank === bank.id && (
                     <motion.div

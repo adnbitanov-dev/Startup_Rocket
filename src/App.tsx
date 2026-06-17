@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { UserProvider, useUser } from './store/UserContext';
+
+const DEMO_ACCOUNTS: Record<string, { id: string; name: string; phone: string; role: 'customer' | 'contractor' | 'admin' }> = {
+  '77019563020': { id: 'u-customer',    name: 'Алексей (Заказчик)',  phone: '+7 (701) 956-30-20', role: 'customer' },
+  '7771234567':  { id: 'u-contractor',  name: 'Арман (Исполнитель)', phone: '+7 (777) 123-45-67', role: 'contractor' },
+  '77007007007': { id: 'u-admin',       name: 'Аскар (Технадзор)',   phone: '+7 (700) 700-70-07', role: 'admin' },
+};
 import { DataProvider } from './store/DataContext';
 import MobileLayout from './layouts/MobileLayout';
 import WelcomeScreen from './pages/auth/WelcomeScreen';
@@ -33,15 +39,14 @@ function AuthFlow() {
         onBack={() => setAuthStep('welcome')}
         onSuccess={(phone) => {
           setTempPhone(phone);
-          if (phone === '77019563020') {
-            loginUser('u-customer', 'Алексей (Заказчик)', '+7 (701) 956-30-20', 'customer');
-            setAuthStep('escrow');
-          } else if (phone === '7771234567') {
-            loginUser('u-contractor', 'Арман (Исполнитель)', '+7 (777) 123-45-67', 'contractor');
-            setAuthStep('escrow');
-          } else if (phone === '77007007007') {
-            loginUser('u-admin', 'Аскар (Технадзор)', '+7 (700) 700-70-07', 'admin');
-            setOnboarded(true);
+          const demo = DEMO_ACCOUNTS[phone];
+          if (demo) {
+            loginUser(demo.id, demo.name, demo.phone, demo.role);
+            if (demo.role === 'admin') {
+              setOnboarded(true);
+            } else {
+              setAuthStep('escrow');
+            }
           } else {
             setAuthStep('role');
           }
@@ -86,9 +91,9 @@ function RoleRedirect() {
 }
 
 function AppContent() {
-  const { isAuthenticated } = useUser();
+  const { isAuthenticated, isOnboarded } = useUser();
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !isOnboarded) {
     return <AuthFlow />;
   }
 
