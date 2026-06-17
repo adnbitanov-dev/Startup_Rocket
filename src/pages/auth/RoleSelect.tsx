@@ -1,9 +1,10 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { HardHat, User, ArrowRight } from 'lucide-react';
 import type { UserRole } from '../../types';
 
 interface RoleSelectProps {
-  onSelect: (role: UserRole) => void;
+  onSelect: (role: UserRole, name: string) => void;
 }
 
 const roles = [
@@ -32,6 +33,17 @@ const roles = [
 ];
 
 export default function RoleSelect({ onSelect }: RoleSelectProps) {
+  const [name, setName] = useState('');
+  const [showError, setShowError] = useState(false);
+
+  const handleSelect = (role: UserRole) => {
+    if (!name.trim()) {
+      setShowError(true);
+      return;
+    }
+    onSelect(role, name.trim());
+  };
+
   return (
     <div className="h-screen flex flex-col bg-background safe-area-pt safe-area-pb">
       <div className="flex-1 flex flex-col px-6 pt-12">
@@ -41,7 +53,38 @@ export default function RoleSelect({ onSelect }: RoleSelectProps) {
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         >
           <h1 className="text-2xl font-bold text-text-main mb-2">Кто вы?</h1>
-          <p className="text-sm text-text-muted mb-8">Выберите вашу роль на платформе. Вы сможете переключиться позже в настройках.</p>
+          <p className="text-sm text-text-muted mb-6">Введите ваше имя и выберите роль на платформе.</p>
+        </motion.div>
+
+        {/* Name Input */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05, type: 'spring', stiffness: 300, damping: 25 }}
+          className="mb-6"
+        >
+          <label className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2 block">
+            Ваше имя или Название компании
+          </label>
+          <input
+            type="text"
+            placeholder="Например, Александр или ТОО СтройГрупп"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (showError) setShowError(false);
+            }}
+            className={`w-full px-4 py-4 rounded-2xl bg-secondary border-2 outline-none transition-all duration-300 font-medium text-text-main text-base ${
+              showError
+                ? 'border-danger bg-danger/5'
+                : 'border-transparent focus:border-primary focus:bg-white focus:shadow-lg focus:shadow-primary/10'
+            }`}
+          />
+          {showError && (
+            <p className="text-xs text-danger font-medium mt-2 px-1">
+              ⚠️ Пожалуйста, введите ваше имя для продолжения
+            </p>
+          )}
         </motion.div>
 
         <div className="space-y-4">
@@ -50,9 +93,9 @@ export default function RoleSelect({ onSelect }: RoleSelectProps) {
               key={r.role}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 + i * 0.1, type: 'spring', stiffness: 300, damping: 25 }}
+              transition={{ delay: 0.15 + i * 0.1, type: 'spring', stiffness: 300, damping: 25 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => onSelect(r.role)}
+              onClick={() => handleSelect(r.role)}
               className={`w-full text-left p-5 rounded-2xl border-2 border-gray-100 hover:${r.borderActive} ${r.bgLight} hover:shadow-lg transition-all duration-300 group`}
             >
               <div className="flex items-start gap-4">
@@ -87,7 +130,7 @@ export default function RoleSelect({ onSelect }: RoleSelectProps) {
       </div>
 
       <div className="px-8 pb-8 text-center">
-        <p className="text-xs text-text-muted/60">Вы всегда можете изменить роль в профиле</p>
+        <p className="text-xs text-text-muted/60">Вы всегда можете изменить настройки в профиле</p>
       </div>
     </div>
   );

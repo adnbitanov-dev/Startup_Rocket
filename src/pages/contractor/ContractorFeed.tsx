@@ -7,11 +7,13 @@ import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
 import { formatMoney, timeAgo } from '../../mock/data';
 import { useData } from '../../store/DataContext';
+import { useUser } from '../../store/UserContext';
 
 const container: any = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
 const item: any = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } } };
 
 export default function ContractorFeed() {
+  const { userId } = useUser();
   const { availableOrders, hasBidOnOrder, getBidsForOrder, submitBid } = useData();
   const [isLoading, setIsLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
@@ -87,7 +89,7 @@ export default function ContractorFeed() {
           {/* Orders */}
           {availableOrders.map((order) => {
         const hasBid = hasBidOnOrder(order.id);
-        const myBid = getBidsForOrder(order.id).find(b => b.contractorId === 'u-contractor');
+        const myBid = getBidsForOrder(order.id).find(b => b.contractorId === userId);
         const isSelected = selectedOrder === order.id;
 
         return (

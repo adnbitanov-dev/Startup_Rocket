@@ -10,10 +10,12 @@ interface UserContextType {
   logout: () => void;
 
   // User data
+  userId: string;
   role: UserRole;
   setRole: (role: UserRole) => void;
   userName: string;
   userPhone: string;
+  loginUser: (id: string, name: string, phone: string, role: UserRole) => void;
 }
 
 const UserContext = createContext<UserContextType | null>(null);
@@ -27,6 +29,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
   });
   const [role, setRoleState] = useState<UserRole>(() => {
     return (localStorage.getItem('gs_role') as UserRole) || 'customer';
+  });
+  const [userId, setUserId] = useState(() => {
+    return localStorage.getItem('gs_user_id') || '';
+  });
+  const [userName, setUserName] = useState(() => {
+    return localStorage.getItem('gs_user_name') || '';
+  });
+  const [userPhone, setUserPhone] = useState(() => {
+    return localStorage.getItem('gs_user_phone') || '';
   });
 
   const setAuthenticated = (v: boolean) => {
@@ -44,12 +55,27 @@ export function UserProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('gs_role', newRole);
   };
 
+  const loginUser = (id: string, name: string, phone: string, newRole: UserRole) => {
+    setUserId(id);
+    setUserName(name);
+    setUserPhone(phone);
+    setRoleState(newRole);
+    setIsAuthenticated(true);
+    
+    localStorage.setItem('gs_user_id', id);
+    localStorage.setItem('gs_user_name', name);
+    localStorage.setItem('gs_user_phone', phone);
+    localStorage.setItem('gs_role', newRole);
+    localStorage.setItem('gs_auth', 'true');
+  };
+
   const logout = () => {
     setIsAuthenticated(false);
     setIsOnboarded(false);
-    localStorage.removeItem('gs_auth');
-    localStorage.removeItem('gs_onboarded');
-    localStorage.removeItem('gs_role');
+    setUserId('');
+    setUserName('');
+    setUserPhone('');
+    localStorage.clear();
   };
 
   return (
@@ -60,10 +86,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
         setAuthenticated,
         setOnboarded,
         logout,
+        userId,
         role,
         setRole,
-        userName: 'Алексей Данилов',
-        userPhone: '+7 (777) 123-45-67',
+        userName,
+        userPhone,
+        loginUser,
       }}
     >
       {children}

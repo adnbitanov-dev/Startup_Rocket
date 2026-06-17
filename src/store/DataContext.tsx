@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from '
 // @ts-ignore
 import { io } from 'socket.io-client';
 import type { Order, Bid, Milestone, OrderStatus, BidStatus, ChatMessage } from '../types';
+import { useUser } from './UserContext';
 import { 
   customerOrders as mockCustomerOrders, 
   availableOrders as mockAvailableOrders,
@@ -46,6 +47,7 @@ const initialBids = [
 ];
 
 export function DataProvider({ children }: { children: ReactNode }) {
+  const { userId, userName } = useUser();
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [bids, setBids] = useState<Bid[]>(initialBids);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -83,18 +85,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // -----------------------------
 
   // Getters
-  const customerOrders = orders.filter(o => o.customerId === 'u-customer');
+  const customerOrders = orders.filter(o => o.customerId === userId);
   
   const availableOrders = orders.filter(o => 
     o.status === 'published' && 
-    o.customerId !== 'u-contractor' && // Contractor shouldn't see their own orders if they had any
+    o.customerId !== userId && // Contractor shouldn't see their own orders if they had any
     o.contractorId === null
   );
 
-  const contractorActiveJobs = orders.filter(o => o.contractorId === 'u-contractor');
+  const contractorActiveJobs = orders.filter(o => o.contractorId === userId);
 
   const getBidsForOrder = (orderId: string) => bids.filter(b => b.orderId === orderId);
-  const hasBidOnOrder = (orderId: string) => bids.some(b => b.orderId === orderId && b.contractorId === 'u-contractor');
+  const hasBidOnOrder = (orderId: string) => bids.some(b => b.orderId === orderId && b.contractorId === userId);
   
   const getMessages = (orderId: string, type: 'direct' | 'dispute') => {
     return messages.filter(m => m.orderId === orderId && m.type === type);
@@ -105,7 +107,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const newOrder: Order = {
       ...orderData,
       id: `ord-${Date.now()}`,
-      customerId: 'u-customer',
+      customerId: userId,
       contractorId: null,
       status: 'published',
       createdAt: new Date().toISOString()
@@ -119,8 +121,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const newBid: Bid = {
       id: `bid-${Date.now()}`,
       orderId,
-      contractorId: 'u-contractor',
-      contractorName: 'Вы (Исполнитель)',
+      contractorId: userId,
+      contractorName: userName || 'Вы (Исполнитель)',
       contractorAvatar: '',
       proposedPrice: price,
       message,

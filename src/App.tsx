@@ -19,8 +19,9 @@ import EscrowOnboarding from './components/ui/EscrowOnboarding';
 import Profile from './pages/Profile';
 
 function AuthFlow() {
-  const { setAuthenticated, setOnboarded, setRole } = useUser();
+  const { loginUser, setOnboarded } = useUser();
   const [authStep, setAuthStep] = useState<'welcome' | 'phone' | 'role' | 'escrow'>('welcome');
+  const [tempPhone, setTempPhone] = useState('');
 
   if (authStep === 'welcome') {
     return <WelcomeScreen onComplete={() => setAuthStep('phone')} />;
@@ -31,15 +32,15 @@ function AuthFlow() {
       <PhoneAuth
         onBack={() => setAuthStep('welcome')}
         onSuccess={(phone) => {
+          setTempPhone(phone);
           if (phone === '77019563020') {
-            setRole('customer');
+            loginUser('u-customer', 'Алексей (Заказчик)', '+7 (701) 956-30-20', 'customer');
             setAuthStep('escrow');
           } else if (phone === '7771234567') {
-            setRole('contractor');
+            loginUser('u-contractor', 'Арман (Исполнитель)', '+7 (777) 123-45-67', 'contractor');
             setAuthStep('escrow');
           } else if (phone === '77007007007') {
-            setRole('admin');
-            setAuthenticated(true);
+            loginUser('u-admin', 'Аскар (Технадзор)', '+7 (700) 700-70-07', 'admin');
             setOnboarded(true);
           } else {
             setAuthStep('role');
@@ -52,8 +53,18 @@ function AuthFlow() {
   if (authStep === 'role') {
     return (
       <RoleSelect
-        onSelect={(role) => {
-          setRole(role);
+        onSelect={(role, name) => {
+          const digits = tempPhone.replace(/\D/g, '') || Date.now().toString().slice(-10);
+          const generatedId = `usr-${digits}`;
+          
+          let formattedPhone = tempPhone;
+          if (digits.length === 11) {
+            formattedPhone = `+7 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9, 11)}`;
+          } else {
+            formattedPhone = `+7 ${digits}`;
+          }
+          
+          loginUser(generatedId, name, formattedPhone, role);
           setAuthStep('escrow');
         }}
       />
@@ -63,7 +74,6 @@ function AuthFlow() {
   return (
     <EscrowOnboarding
       onComplete={() => {
-        setAuthenticated(true);
         setOnboarded(true);
       }}
     />
