@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutGrid, Search, ShieldCheck, User } from 'lucide-react';
+import { LayoutGrid, Search, User } from 'lucide-react';
 import { useUser } from '../store/UserContext';
 import { motion } from 'framer-motion';
 

@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
-import { Wallet, TrendingUp, Star, Briefcase, ChevronRight, Search, Award, Zap } from 'lucide-react';
-import Card from '../../components/ui/Card';
+import { Wallet, Star, Briefcase, ChevronRight, Search, Award, Zap } from 'lucide-react';
 import Badge from '../../components/ui/Badge';
 import { contractorEarnings, formatMoney, statusLabels, statusVariants } from '../../mock/data';
 import { useNavigate } from 'react-router-dom';
